@@ -1,0 +1,55 @@
+
+data/*
+
+# --- Редакторы и IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+ 
+# --- Сборка и артефакты ---
+build/
+dist/
+out/
+target/
+bin/
+obj/
+*.o
+*.class
+*.exe
+*.dll
+*.so
+ 
+# --- Логи и временные файлы ---
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.cache
+ 
+# --- Окружение и секреты ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+ 
+# --- Покрытие тестов ---
+coverage/
+.coverage
+htmlcov/
+.nyc_output/
+ 
