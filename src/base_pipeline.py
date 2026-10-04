@@ -1,24 +1,23 @@
-import torch
-from torch import nn
-from torch.utils.data import Dataset, DataLoader
 import os
-import pandas as pd
-
-class MelSpecDataset(Dataset):
-
-    def __init__(self, MELSPEC_DATA_DIR, melspec_indexes):
-        self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
-        self.melspec_paths = [os.path.join(self.MELSPEC_DATA_DIR,f) for f in os.listdir(self.MELSPEC_DATA_DIR) if f.endswith('.pt')]
-        self.df_slice = pd.read_csv(os.path.join(MELSPEC_DATA_DIR, "DF.csv")).loc[melspec_indexes, :]
-
-    def __len__(self):
-        return len(self.df_slice)
-
-    def __getitem__(self, index):
-        melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.df_slice.iloc[index, "path"]))
-        label = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.df_slice.iloc[index, "label"]))
-        return melspec, label
+from src.dataset import MelSpecDataset 
+from torch.utils.data import DataLoader
 
 
+BATCH_SIZE = 32
 
-    
+DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
+PREPARED_DDATA = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
+
+dataset = MelSpecDataset(PREPARED_DDATA, melspec_indexes=range(1000))
+
+
+train_loader = DataLoader(
+    dataset=dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+)
+
+
+
+
+

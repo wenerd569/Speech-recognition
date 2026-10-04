@@ -1,32 +1,4 @@
-from src.base_pipeline import MyDataset as Dataset
-form torch.utils.data import DataLoader, random_split
 import torch.nn as nn
-
-
-BATCH_SIZE = 32
-
-
-
-
-
-train_dataset, test_dataset = random_split(
-    full_dataset, 
-    [train_size, test_size],
-    generator=torch.Generator().manual_seed(42) 
-)
-
-train_losder = DataLoader(
-    dataset=train_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-)
-
-train_losder = DataLoader(
-    dataset=train_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-)
-
 
 
 
