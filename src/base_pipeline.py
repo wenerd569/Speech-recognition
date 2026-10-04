@@ -2,7 +2,7 @@ import os
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from data_preparing import MelSpecDataset 
+from data_preparing import MelSpecDataset
 from torch.testing._internal.data.network1 import Net
 from base_net import BaseNet
 
