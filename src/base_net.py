@@ -5,7 +5,7 @@ class BaseNet(nn.Module):
         super(BaseNet, self).__init__()
         
         self.features = nn.Sequential(
-            nn.Conv2d(1, 2, kernel_size=kernel_sizes, stride=strides[0], padding=paddings[0])),
+            nn.Conv2d(1, 2, kernel_size=kernel_sizes, stride=strides[0], padding=paddings[0]),
             nn.BatchNorm2d(10),
             nn.Conv2d(2, 4, kernel_size=kernel_sizes, stride=strides[1], padding=paddings[1]),
             nn.BatchNorm2d(10),
