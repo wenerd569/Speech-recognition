@@ -35,10 +35,21 @@ def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
             validation_list.append(line[:-4] + ".pt")
     f.close()
 
-    df = pd.read_csv(os.path.join(MELSPEC_DATA_DIR), "DF.csv")
-    df_train = df[df["path"] not in testing_list and df["path"] not in validation_list]
+    df = pd.read_csv(os.path.join(MELSPEC_DATA_DIR,"DF.csv"))
+    df_train = df[(df["path"] not in testing_list) and (df["path"] not in validation_list)]
     df_test = df[df["path" in testing_list]]
     df_validation = df[df["path" in validation_list]]
 
+    df_train.to_csv(MELSPEC_DATA_DIR, index=False)
+    df_test.to_csv(MELSPEC_DATA_DIR, index=False)
+    df_validation.to_csv(MELSPEC_DATA_DIR, index=False)
+
     return df_train, df_test, df_validation
 
+
+DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
+DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/speech_commands_v0.01")
+DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
+
+if __name__ == "__main__":
+    init_datasets(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO)
