@@ -37,7 +37,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
             out_name = f.replace(".wav", ".pt")
             label = os.path.basename(root)
 
-            out_name = f'{label}/{out_name}'
+            out_name = f"{label}/{out_name}"
 
             if wav_file.shape[0] > 1: #одноканальность делаем
                 wav_file = torch.mean(wav_file, dim=0, keepdim=True)
@@ -51,7 +51,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
                 else:
                     wav_melspec = wav_melspec[..., :target_T]
 
-
+            os.makedirs(os.path.join(DIR_TO_SAVE_TO,label), exist_ok=True)
             torch.save(wav_melspec, os.path.join(DIR_TO_SAVE_TO, out_name))
 
             rows.append({"path": out_name, "label": label})
