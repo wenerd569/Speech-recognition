@@ -1,5 +1,6 @@
 import os
 import torch.nn as nn
+from torch.optim import Adam
 from torch.utils.data import DataLoader
 
 from data_preparing import MelSpecDataset
@@ -7,25 +8,29 @@ from torch.testing._internal.data.network1 import Net
 from base_net import BaseNet
 
 
+def train(net, epochs: int, train_loader, validate_loader, optimizer, loss):
+    
+    for epoch in range(10):
+        print(f"Epoch {epoch}")
+        for batch_idx, (data, target) in enumerate(train_loader):
+            optimizer.zero_grad()
+            output = net(data)
+            loss_value = loss(output, target)
+            loss_value.backward()
+            optimizer.step()
+        
+        for batch_idx, (data, target) in enumerate(validate_loader):
+            output = net(data)
+            loss_value = loss(output, target)
+            print(f"Validation loss: {loss_value.item()}")
 
-BATCH_SIZE = 32
-
-DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
-PREPARED_DDATA = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
-
-dataset = MelSpecDataset(PREPARED_DDATA, melspec_indexes=range(1000))
+???
 
 
-train_loader = DataLoader(
-    dataset=dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-)
+net = BaseNet(kernel_sizes=[3, 3, 3, 3], strides=[1, 1, 1, 1], paddings=[1, 1, 1, 1])
 
-net = BaseNet(kernel_size=3)
+optimizer = Adam(net.parameters(), lr=0.001)
+loss = nn.NLLLoss()
 
-for batch_idx, (data, target) in enumerate(train_loader):
-    output = net(data)
-    # TODO: добавить loss и backward
-    print(f"Batch {batch_idx}")
 
+train(net, epochs=40, train_loader=train_loader, validate_loader=validate_loader, optimizer=optimizer, loss=loss)
