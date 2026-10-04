@@ -24,7 +24,6 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
     os.makedirs(DIR_TO_SAVE_TO, exist_ok=True)
 
     rows = []
-    seen = set()
 
     for root, _, files in os.walk(DIR_TO_UPLOAD_FROM):
         print("checking root ", root)
@@ -32,16 +31,13 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
             if not f.endswith('.wav'):
                 continue
 
-            out_name = f.replace(".wav", ".pt")
-            if out_name in seen:
-                continue
-            else:
-                seen.add(out_name) #убираем дупликаты файлов в разных папках лол
-
             wav_path = os.path.join(root,f)
-            label = os.path.basename(root)
 
             wav_file, _ = torchaudio.load(wav_path)
+            out_name = f.replace(".wav", ".pt")
+            label = os.path.basename(root)
+
+            out_name = f'{out_name[:-3]}_{label}.pt'
 
             if wav_file.shape[0] > 1: #одноканальность делаем
                 wav_file = torch.mean(wav_file, dim=0, keepdim=True)
