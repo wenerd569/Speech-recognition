@@ -1,6 +1,7 @@
 import os
-from src.dataset import MelSpecDataset 
 from torch.utils.data import DataLoader
+
+from dataset import MelSpecDataset 
 
 
 BATCH_SIZE = 32
@@ -16,8 +17,4 @@ train_loader = DataLoader(
     batch_size=BATCH_SIZE,
     shuffle=True,
 )
-
-
-
-
 
