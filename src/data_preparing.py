@@ -17,7 +17,7 @@ class MelSpecDataset(Dataset):
         melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.df.iloc[index, "path"]))
         label = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.df.iloc[index, "label"]))
         return melspec, label
-
+#dataloadfer посмотреть, как сохранить в памяти весь датасет
 def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
 
     testing_list = []
