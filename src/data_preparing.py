@@ -6,22 +6,24 @@ import pandas as pd
 
 class MelSpecDataset(Dataset):
 
-    def __init__(self, df, MELSPEC_DATA_DIR):
+    def __init__(self, df, MELSPEC_DATA_DIR, label_to_index=None):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
+        self.label_to_index = label_to_index or {
+            label: index for index, label in enumerate(sorted(df["label"].unique()))
+        }
 
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, index):
-        melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.df.iloc[index, "path"]))
-        label = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.df.iloc[index, "label"]))
+        row = self.df.iloc[index]
+        melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, row["path"]))
+        label = torch.tensor(self.label_to_index[row["label"]], dtype=torch.long)
         return melspec, label
-<<<<<<< HEAD
 
-=======
 #dataloadfer посмотреть, как сохранить в памяти весь датасет
->>>>>>> origin/main
+
 def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
 
     testing_list = []
@@ -38,6 +40,7 @@ def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
             line = line.strip()
             validation_list.append(line[:-4] + ".pt")
     f.close()
+    print(validation_list)
 
     print(len(testing_list), len(validation_list))
 

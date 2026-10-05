@@ -1,8 +1,9 @@
-import torch
-import torchaudio.transforms as T
-import torchaudio
 import os
+
 import pandas as pd
+import torch
+import torchaudio
+import torchaudio.transforms as T
 
 DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
 DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/speech_commands_v0.01")
