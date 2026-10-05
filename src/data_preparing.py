@@ -10,7 +10,7 @@ class MelSpecDataset(Dataset):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
         self.label_to_index = label_to_index or {
-            label: index for index, label in enumerate(sorted(df["label"].unique()))
+            label: index for index, label in enumerate(sorted(df["label"].drop_duplicates()))
         }
 
     def __len__(self):
@@ -40,7 +40,6 @@ def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
             line = line.strip()
             validation_list.append(line[:-4] + ".pt")
     f.close()
-    print(validation_list)
 
     print(len(testing_list), len(validation_list))
 

@@ -3,6 +3,7 @@ numpy==2.5.3
 torch==2.14.1
 torchaudio==2.11.0
 torchcodec==0.16
+torchinfo==1.8.0
 
 pyarrow>=24.0.0
 plotly>=5.22.0

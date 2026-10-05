@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.optim import Adam
 from torch.utils.data import DataLoader, DataLoader
 from torch.testing._internal.data.network1 import Net
+from torchinfo import summary
 
 
 from data_preparing import MelSpecDataset
@@ -12,15 +13,13 @@ from base_net import BaseNet
 from mean_net import MeanNet
 from union_net import UnionNet
 
+from wav_preproccess import DIR_CURRENT, DIR_TO_SAVE_TO, DF_PATH
 
-
-DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
-DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
-DF_PATH = os.path.join(DIR_TO_SAVE_TO, "DF.csv")
 BATCH_SIZE = 32
 LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
 LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
-
+from wav_preproccess import N_mels, Target_T
+BASE_NET_INPUT_SHAPE = (32, 1, N_mels, Target_T)
 
 def train(net, epochs: int, train_loader, validate_loader, optimizer, loss):
     previous_validation_loss = None
@@ -67,22 +66,23 @@ def get_loader(df_csv_name: str):
     train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     return train_loader
 
+if __name__ == "__main__":
 
-net = UnionNet(
-    BaseNet(kernel_sizes=[3, 3, 3, 3], strides=[1, 1, 1, 1], paddings=[1, 1, 1, 1]),
-    MeanNet(output_features=len(LABEL_TO_INDEX))
-)
+    base_cnn = BaseNet(kernel_sizes=[3, 3, 3, 3], strides=[1, 1, 1, 1], paddings=[1, 1, 1, 1])
 
+    BASE_NET_OUTPUT_SHAPE = summary(base_cnn.features, input_size = BASE_NET_INPUT_SHAPE, verbose=0).summary_list[-1].output_size
+   
+    mean_net = MeanNet(output_features=len(LABEL_TO_INDEX), input_features=BASE_NET_OUTPUT_SHAPE[1]*BASE_NET_OUTPUT_SHAPE[2])
 
+    net = UnionNet(
+        base_cnn,
+        mean_net,
+    )
 
+    optimizer = Adam(net.parameters(), lr=0.001)
+    loss = nn.NLLLoss()
 
+    train_loader = get_loader("df_train.csv")
+    validation_loader = get_loader("df_validation.csv")
 
-optimizer = Adam(net.parameters(), lr=0.001)
-loss = nn.NLLLoss()
-
-
-train_loader = get_loader("df_train.csv")
-validation_loader = get_loader("df_validation.csv")
-
-
-train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss)
+    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss)
