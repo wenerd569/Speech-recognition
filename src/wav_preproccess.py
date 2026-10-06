@@ -30,6 +30,10 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
 
     rows = []
 
+    total = 0
+    total_sq = 0
+    n = 0
+
     for root, _, files in os.walk(DIR_TO_UPLOAD_FROM):
         print("checking root ", root)
         for f in files:
@@ -56,6 +60,10 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
                 else:
                     wav_melspec = wav_melspec[..., :Target_T]
 
+            total += torch.sum(wav_melspec.flatten())
+            total_sq += torch.sum(wav_melspec.flatten() ** 2)
+            n += wav_melspec.numel()
+
             os.makedirs(os.path.join(DIR_TO_SAVE_TO, label), exist_ok=True)
             torch.save(wav_melspec, os.path.join(DIR_TO_SAVE_TO, out_name))
 
@@ -64,5 +72,10 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
     df = pd.DataFrame(rows, columns=["path","label"])
     df.to_csv(DF_PATH, index=False)
 
+    avg = total/n
+    var = total_sq/n - (total/n)**2
+    return avg, torch.sqrt(var)
+
 if __name__ == "__main__":
-    transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft, N_mels, Hop_length)
+    avg, std = transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft, N_mels, Hop_length)
+    print(avg, std)
