@@ -11,7 +11,7 @@ DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccesse
 DF_PATH = os.path.join(DIR_TO_SAVE_TO, "DF.csv")
 
 Sample_rate = 16000
-N_fft = 1024
+N_fft = 1024,
 N_mels = 128
 Target_T = Sample_rate // (N_fft // 2) + 1
 #TODO: спросить что ставить в параметры
@@ -64,4 +64,4 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
     df.to_csv(DF_PATH, index=False)
 
 if __name__ == "__main__":
-    transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft, N_mels)
+    transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft)

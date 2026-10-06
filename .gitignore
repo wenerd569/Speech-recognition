@@ -53,3 +53,5 @@ coverage/
 htmlcov/
 .nyc_output/
  
+# --- бесит артёма ---
+.DS_Store

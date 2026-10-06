@@ -14,11 +14,12 @@ from mean_net import MeanNet
 from union_net import UnionNet
 
 from wav_preproccess import DIR_CURRENT, DIR_TO_SAVE_TO, DF_PATH
+from wav_preproccess import N_mels, Target_T
 
 BATCH_SIZE = 32
 LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
 LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
-from wav_preproccess import N_mels, Target_T
+
 BASE_NET_INPUT_SHAPE = (32, 1, N_mels, Target_T)
 
 def train(net, epochs: int, train_loader, validate_loader, optimizer, loss):
