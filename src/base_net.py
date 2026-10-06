@@ -6,10 +6,6 @@ class BaseNet(nn.Module):
         super(BaseNet, self).__init__()
         
         self.features = nn.Sequential(
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
             nn.Conv2d(1, channels[0], kernel_size=kernel_sizes[0], padding="same"),
             nn.ReLU(),
             nn.BatchNorm2d(channels[0]),
