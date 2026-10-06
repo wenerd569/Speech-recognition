@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class AttentionCompleteNet(nn.Module):
     def __init__(
-        self, input_features: int, output_features: int, hidden_size: int = 128
+        self, output_features: int, hidden_size: int = 128
     ):
         # B x T x 128
         super(AttentionCompleteNet, self).__init__()
