@@ -70,7 +70,6 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
             optimizer.zero_grad()
             output = model(X)
             loss_value = loss(output, y)
-
             loss_value.backward()
             optimizer.step()
 

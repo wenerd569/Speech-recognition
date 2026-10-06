@@ -11,9 +11,8 @@ class MeanNet(nn.Module):
         self.logsoftmax = nn.LogSoftmax(dim=1)
 
     def forward(self, x):
-        # x.shape = (B,C,F',T')
-        x = torch.mean(x, dim=3, keepdim=False)
-        x = x.flatten(1,2)
+        # x.shape = (B, F',T')
+        x = torch.mean(x, dim=2, keepdim=False)
         x = self.linear(x)
         x = self.logsoftmax(x)
         return x

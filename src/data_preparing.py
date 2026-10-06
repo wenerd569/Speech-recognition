@@ -9,21 +9,36 @@ STD = 210.8841
 
 class MelSpecDataset(Dataset):
 
-    def __init__(self, df, MELSPEC_DATA_DIR, label_to_index=None):
+    def __init__(self, df, MELSPEC_DATA_DIR, label_to_index=None, fast = True):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
         self.label_to_index = label_to_index or {
             label: index for index, label in enumerate(sorted(df["label"].drop_duplicates()))
         }
+        self.labels = torch.tensor([label_to_index[l] for l in df["label"]])
+        self.paths = self.df["path"].tolist()
+        self.fast = fast
+        if fast:
+            temp = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[0]))
+            shape = temp.shape
+            dtype = temp.dtype
+            N = len(self.paths)
+            self.data = torch.empty((N,*shape), dtype = dtype)
+            for i,p in enumerate(self.paths):
+                self.data[i] = torch.load(os.path.join(self.MELSPEC_DATA_DIR,p))
+            self.data = (self.data - AVG)/STD
+        else:
+            self.data = None
 
     def __len__(self):
-        return len(self.df)
+        return len(self.paths)
 
     def __getitem__(self, index):
-        row = self.df.iloc[index]
-        melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, row["path"]))
-        label = torch.tensor(self.label_to_index[row["label"]], dtype=torch.long)
-        return (melspec - AVG)/STD, label
+        if self.fast:
+            return self.data[index], self.labels[index]
+        else:
+            melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]))
+            return (melspec - AVG)/STD, self.labels[index]
 
 #dataloadfer посмотреть, как сохранить в памяти весь датасет
 

@@ -63,7 +63,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
             if Target_T is not None: #выравнивание по длительности
                 T_current = wav_melspec.shape[-1]
                 if T_current < Target_T:
-                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, Target_T - T_current))
+                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, Target_T - T_current), value=9.8931)
                 else:
                     wav_melspec = wav_melspec[..., :Target_T]
 

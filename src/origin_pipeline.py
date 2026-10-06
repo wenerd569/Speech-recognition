@@ -46,11 +46,8 @@ if __name__ == "__main__":
 
     base_cnn = BaseNet(kernel_sizes=[(5,1),(5,1)], channels=[10,1])
 
-    BASE_NET_OUTPUT_SHAPE = summary(base_cnn.features, input_size = BASE_NET_INPUT_SHAPE, verbose=0).summary_list[-1].output_size
-   
-    lstm_net = LSTMNet(input_features=BASE_NET_OUTPUT_SHAPE[1]*BASE_NET_OUTPUT_SHAPE[2])
+    lstm_net = LSTMNet(input_features=N_mels)
     attention_net = AttentionCompleteNet(output_features=NUM_CLASSES)
-
 
     net = UnionNet([base_cnn, lstm_net, attention_net])
 
