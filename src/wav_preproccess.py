@@ -1,8 +1,7 @@
 import os
-
+import soundfile as sf
 import pandas as pd
 import torch
-import torchaudio
 import torchaudio.transforms as T
 
 DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +37,15 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
 
             wav_path = os.path.join(root,f)
 
-            wav_file, _ = torchaudio.load(wav_path)
+            wav_file, sample_rate = sf.read(wav_path, dtype="float32")
+
+            wav_file = torch.from_numpy(wav_file)
+
+            if wav_file.ndim == 1:
+                wav_file = wav_file.unsqueeze(0)
+            else:
+                wav_file = wav_file.transpose(0, 1)
+            
             out_name = f.replace(".wav", ".pt")
             label = os.path.basename(root)
 
