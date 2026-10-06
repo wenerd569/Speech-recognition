@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, DataLoader
 from torch.testing._internal.data.network1 import Net
 from torchinfo import summary
 
+from train_evaluate import train
 
 from data_preparing import MelSpecDataset
 from base_net import BaseNet
@@ -19,46 +20,9 @@ from wav_preproccess import N_mels, Target_T
 BATCH_SIZE = 32
 LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
 LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
+NUM_CLASSES = len(LABELS)
 
 BASE_NET_INPUT_SHAPE = (32, 1, N_mels, Target_T)
-
-def train(net, epochs: int, train_loader, validate_loader, optimizer, loss):
-    previous_validation_loss = None
-    for epoch in range(epochs):
-        net.train()
-        print(f"Epoch {epoch}")
-        train_loss = 0.0
-        for data, target in train_loader:
-            optimizer.zero_grad()
-            output = net(data)
-            loss_value = loss(output, target)
-
-            loss_value.backward()
-            optimizer.step()
-            train_loss += loss_value.item()
-        train_loss /= len(train_loader)
-        print(f"Train loss: {train_loss}")
-
-        
-        avg_accuracy = 0.0
-        validation_loss = 0.0
-        net.eval()
-        with torch.no_grad():
-            for data, target in validate_loader:
-                output = net(data)
-                validation_loss += loss(output, target).item()
-                _, preds = torch.max(output, dim=1)
-                avg_accuracy += (preds == target).float().mean().item()
-        
-        validation_loss = validation_loss / len(validate_loader)
-        print(f"Validation loss: {validation_loss}")
-        
-        if previous_validation_loss is not None:
-            print(f"Loss change: {previous_validation_loss - validation_loss}")
-        previous_validation_loss = validation_loss
-
-        avg_accuracy /= len(train_loader)
-        print(f"Average accuracy: {avg_accuracy}")
 
 
 def get_loader(df_csv_name: str):
@@ -68,6 +32,8 @@ def get_loader(df_csv_name: str):
     return train_loader
 
 if __name__ == "__main__":
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     base_cnn = BaseNet(kernel_sizes=[3, 3, 3, 3], strides=[1, 1, 1, 1], paddings=[1, 1, 1, 1])
 
@@ -86,4 +52,4 @@ if __name__ == "__main__":
     train_loader = get_loader("df_train.csv")
     validation_loader = get_loader("df_validation.csv")
 
-    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss)
+    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device)
