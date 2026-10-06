@@ -3,18 +3,17 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from torch.optim import Adam
-from torch.utils.data import DataLoader, DataLoader
-from torch.testing._internal.data.network1 import Net
+from torch.utils.data import DataLoader
 from torchinfo import summary
 
 from train_evaluate import train
 
 from data_preparing import MelSpecDataset
 from base_net import BaseNet
-from mean_net import MeanNet
+from heads.mean_net import MeanNet
 from union_net import UnionNet
 
-from wav_preproccess import DIR_CURRENT, DIR_TO_SAVE_TO, DF_PATH
+from wav_preproccess import DIR_TO_SAVE_TO, DF_PATH
 from wav_preproccess import N_mels, Target_T
 
 BATCH_SIZE = 32
