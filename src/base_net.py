@@ -7,8 +7,10 @@ class BaseNet(nn.Module):
         
         self.features = nn.Sequential(
             nn.Conv2d(1, channels, kernel_size=kernel_sizes[0], stride=strides[0], padding=paddings[0]),
-            nn.ReLU(),
             nn.BatchNorm2d(channels),
+            nn.ReLU(),
+            nn.Conv2d(channels, 1, kernel_size=kernel_sizes[0], stride=strides[0], padding=paddings[0]),
+            nn.BatchNorm2d(1),
             nn.ReLU(),
         )
 
