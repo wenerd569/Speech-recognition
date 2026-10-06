@@ -2,7 +2,7 @@ import numpy as np
 
 from base_pipeline import NUM_CLASSES
 
-def accuracy(model, dataloader, device):
+def accuracy(model, dataloader, device) -> float:
     hits = 0
 
     for X, y in dataloader:
@@ -15,7 +15,7 @@ def accuracy(model, dataloader, device):
 
     return hits / len(dataloader)
 
-def confusion_matrix(model, dataloader, device):
+def confusion_matrix(model, dataloader, device) -> np.array:
     matrix = np.zeros((NUM_CLASSES, NUM_CLASSES))
 
     for X, y in dataloader:
