@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.utils.data import DataLoader
-from torchinfo import summary
 
 from train_evaluate import train
 
@@ -57,4 +56,4 @@ if __name__ == "__main__":
     train_loader = get_loader("df_train.csv")
     validation_loader = get_loader("df_validation.csv")
 
-    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=SAVE_TO_2)
+    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=None)

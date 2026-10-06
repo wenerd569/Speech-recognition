@@ -2,6 +2,8 @@
 import torch
 import os
 from metrics import metrics_and_loss
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 def evaluate(model, dataloader, num_classes, loss, device):
     with torch.no_grad():
@@ -57,6 +59,12 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
         start_epoch, best_val_loss, best_metrics = load_model(model, optimizer,load_path, device)
 
     epoch = start_epoch
+
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
+    writer = SummaryWriter(log_dir=log_dir)
+    print(f"tensorboard log_dir: {log_dir}")
+    global_step = start_epoch * len(train_loader)
+
     while(epoch<epochs):
         model.train()
         print(f"Epoch {epoch}")
@@ -64,17 +72,24 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
         train_loss = 0.0
         total = 0
 
-        for X, y in train_loader:
+        for X, y in tqdm(train_loader):
             X = X.to(device)
             y = y.to(device)
             optimizer.zero_grad()
             output = model(X)
             loss_value = loss(output, y)
             loss_value.backward()
+
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float("inf"))
             optimizer.step()
 
             train_loss += loss_value.item()*y.size(0)
             total += y.size(0)
+
+            if global_step % 100 == 0:
+                writer.add_scalar("Loss/train_batch", loss_value.item(), global_step)
+                writer.add_scalar("GradNorm/train_batch", grad_norm.item(), global_step)
+            global_step+=1
         
         train_loss /= total
         print(f"Train loss: {train_loss}")
@@ -84,6 +99,11 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
         print(metrics_loss)
 
         val_loss = metrics_loss["validation loss"]
+        val_acc = metrics_loss["accuracy"]
+
+        writer.add_scalar("Loss/train_epoch", train_loss, epoch)
+        writer.add_scalar("Loss/val_epoch", val_loss, epoch)
+        writer.add_scalar("Accuracy/val_epoch", val_acc, epoch)
 
         epoch+=1
 
@@ -107,6 +127,8 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
                     break
             #else:
             #   break
+
+    writer.close()
 
     print(f'finished, best_val_loss: {best_val_loss}')
     print(f'best metrics: {best_metrics}')
