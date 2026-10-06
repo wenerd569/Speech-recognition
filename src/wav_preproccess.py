@@ -11,17 +11,18 @@ DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccesse
 DF_PATH = os.path.join(DIR_TO_SAVE_TO, "DF.csv")
 
 Sample_rate = 16000
-N_fft = 1024,
+N_fft = 1024
 N_mels = 128
-Target_T = Sample_rate // (N_fft // 2) + 1
+Hop_length = 128
+Target_T = Sample_rate // Hop_length + 1
 #TODO: спросить что ставить в параметры
-def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 16000, n_fft = 1024, n_mels = 128): #см документацию к параметрам
+def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = Sample_rate, n_fft = N_fft, n_mels = N_mels, hop_length = Hop_length): #см документацию к параметрам
 
-    target_T = (1 * sample_rate) // (n_fft // 2) + 1
-    
     melspec_transform = T.MelSpectrogram(
+        sample_rate=sample_rate,
         n_fft = n_fft, 
-        n_mels = n_mels
+        hop_length=hop_length,
+        n_mels = n_mels,
     )
 
     print("created melspectrogram model")
@@ -48,12 +49,12 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
 
             wav_melspec = melspec_transform(wav_file)
 
-            if target_T is not None: #выравнивание по длительности
+            if Target_T is not None: #выравнивание по длительности
                 T_current = wav_melspec.shape[-1]
-                if T_current < target_T:
-                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, target_T - T_current))
+                if T_current < Target_T:
+                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, Target_T - T_current))
                 else:
-                    wav_melspec = wav_melspec[..., :target_T]
+                    wav_melspec = wav_melspec[..., :Target_T]
 
             os.makedirs(os.path.join(DIR_TO_SAVE_TO, label), exist_ok=True)
             torch.save(wav_melspec, os.path.join(DIR_TO_SAVE_TO, out_name))
@@ -64,4 +65,4 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
     df.to_csv(DF_PATH, index=False)
 
 if __name__ == "__main__":
-    transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft)
+    transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft, N_mels, Hop_length)
