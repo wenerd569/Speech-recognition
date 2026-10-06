@@ -41,7 +41,7 @@ if __name__ == "__main__":
     else:
         device = torch.device("cpu")
 
-    print(device)
+    print("device: ", device)
 
     base_cnn = BaseNet(kernel_sizes=[(5,1),(5,1)], channels=[10,1])
 
@@ -59,4 +59,4 @@ if __name__ == "__main__":
     train_loader = get_loader("df_train.csv")
     validation_loader = get_loader("df_validation.csv")
 
-    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO)
+    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO, load_path=SAVE_TO)
