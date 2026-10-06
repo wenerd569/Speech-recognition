@@ -1,28 +1,43 @@
 import numpy as np
+import pandas as pd
+import torch
 
-from base_pipeline import NUM_CLASSES
+from wav_preproccess import DF_PATH
+LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
+LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
+NUM_CLASSES = len(LABELS)
 
-def accuracy(model, dataloader, device) -> float:
-    hits = 0
+def metrics_and_loss(model, dataloader, loss, device):
+    with torch.no_grad():
+        was_training = model.training
+        model.eval()
 
-    for X, y in dataloader:
-        X = X.to(device)
-        y = y.to(device)
+        matrix = torch.zeros((NUM_CLASSES, NUM_CLASSES), dtype=torch.long, device=device)
+        hits = 0
+        total = 0
+        validation_loss = 0.0
 
-        y_pred = model(X).argmax(dim=1)
-        if y == y_pred:
-            hits += 1
+        for X, y in dataloader:
+            X = X.to(device, non_blocking=True)
+            y = y.to(device, non_blocking=True)
 
-    return hits / len(dataloader)
+            y_prob = model(X)
+            y_pred = y_prob.argmax(dim=1)
 
-def confusion_matrix(model, dataloader, device) -> np.array:
-    matrix = np.zeros((NUM_CLASSES, NUM_CLASSES))
+            idx = y * NUM_CLASSES + y_pred
+            matrix.view(-1).scatter_add_(
+                0, idx, torch.ones_like(idx, dtype=matrix.dtype)
+            )
 
-    for X, y in dataloader:
-        X = X.to(device)
-        y = y.to(device)
+            hits += (y == y_pred).sum().item()
+            total += y.size(0)
+            validation_loss += loss(y_prob, y).item() * y.size(0)
 
-        y_pred = model(X).argmax(dim=1)
-        matrix[y, y_pred] += 1
+        if was_training:
+            model.train()
 
-    return matrix
+        return {
+            "accuracy": hits / total,
+            "confusion matrix": matrix.cpu(),
+            "validation loss": validation_loss / total,
+        }

@@ -23,6 +23,7 @@ LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
 NUM_CLASSES = len(LABELS)
 DIR_PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAVE_TO = os.path.join(DIR_PROJECT, "models/test.pt")
+SAVE_TO_2 = os.path.join(DIR_PROJECT, "models/test2.pt")
 BASE_NET_INPUT_SHAPE = (32, 1, N_mels, Target_T)
 
 
@@ -59,4 +60,4 @@ if __name__ == "__main__":
     train_loader = get_loader("df_train.csv")
     validation_loader = get_loader("df_validation.csv")
 
-    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO, load_path=SAVE_TO)
+    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=SAVE_TO_2)
