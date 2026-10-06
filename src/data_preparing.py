@@ -4,6 +4,9 @@ from torch.utils.data import Dataset
 import os
 import pandas as pd
 
+AVG = 9.8931
+STD = 210.8841
+
 class MelSpecDataset(Dataset):
 
     def __init__(self, df, MELSPEC_DATA_DIR, label_to_index=None):
@@ -20,7 +23,7 @@ class MelSpecDataset(Dataset):
         row = self.df.iloc[index]
         melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, row["path"]))
         label = torch.tensor(self.label_to_index[row["label"]], dtype=torch.long)
-        return melspec, label
+        return (melspec - AVG)/STD, label
 
 #dataloadfer посмотреть, как сохранить в памяти весь датасет
 
