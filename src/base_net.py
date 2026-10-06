@@ -17,4 +17,5 @@ class BaseNet(nn.Module):
     def forward(self, x):
         # B x 1 x F x T
         x = self.features(x)
+        x = x.squeeze(1)
         return x
