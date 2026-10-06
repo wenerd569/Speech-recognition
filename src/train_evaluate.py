@@ -1,4 +1,4 @@
-from torchmetrics import Accuracy, F1Score, Precision, Recall
+# from torchmetrics import Accuracy, F1Score, Precision, Recall
 import torch
 import os
 
@@ -7,10 +7,16 @@ def evaluate(model, dataloader, num_classes, loss, device):
         model.eval()
         model.to(device)
 
-        acc = Accuracy(task="multiclass", num_classes=num_classes).to(device)
-        f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro").to(device)
-        prec = Precision(task="multiclass", num_classes=num_classes, average="macro").to(device)
-        rec = Recall(task="multiclass", num_classes=num_classes, average="macro").to(device)
+        # acc = Accuracy(task="multiclass", num_classes=num_classes).to(device)
+        # f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro").to(device)
+        # prec = Precision(task="multiclass", num_classes=num_classes, average="macro").to(device)
+        # rec = Recall(task="multiclass", num_classes=num_classes, average="macro").to(device)
+
+        acc = 0 
+        f1 = 0
+        prec = 0
+        rec = 0
+
 
         validation_loss = 0.0
         total = 0
@@ -20,23 +26,23 @@ def evaluate(model, dataloader, num_classes, loss, device):
             y = y.to(device)
 
             probs = model(X)
-            preds = probs.argmax(dim=1)
+            # preds = probs.argmax(dim=1)
 
             validation_loss += loss(probs, y).item()*y.size(0)
             total += y.size(0)
 
-            acc.update(preds,y)
-            f1.update(preds,y)
-            prec.update(preds,y)
-            rec.update(preds,y)
+            # acc.update(preds,y)
+            # f1.update(preds,y)
+            # prec.update(preds,y)
+            # rec.update(preds,y)
 
         validation_loss /= total
 
         return {
-            "accuracy": acc.compute().item(),
-            "f1": f1.compute().item(),
-            "prec": prec.compute().item(),
-            "rec": rec.compute().item(),
+            "accuracy": acc,
+            "f1": f1,
+            "prec": prec,
+            "rec": rec,
             "validation loss": validation_loss
         }
 
