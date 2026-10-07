@@ -13,7 +13,6 @@ Sample_rate = 16000
 N_fft = 1024
 N_mels = 128
 Hop_length = 128
-Target_T = Sample_rate // Hop_length + 1
 #TODO: спросить что ставить в параметры
 def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = Sample_rate, n_fft = N_fft, n_mels = N_mels, hop_length = Hop_length): #см документацию к параметрам
 
