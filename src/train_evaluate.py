@@ -4,6 +4,7 @@ import os
 from metrics import metrics_and_loss
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+import seaborn as sb
 
 def evaluate(model, dataloader, num_classes, loss, device):
     with torch.no_grad():
@@ -100,10 +101,13 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
 
         val_loss = metrics_loss["validation loss"]
         val_acc = metrics_loss["accuracy"]
+        confusion_matrix = metrics_loss['confusion matrix']
 
         writer.add_scalar("Loss/train_epoch", train_loss, epoch)
         writer.add_scalar("Loss/val_epoch", val_loss, epoch)
         writer.add_scalar("Accuracy/val_epoch", val_acc, epoch)
+
+        writer.add_figure("confusion matrix", sb.heatmap(confusion_matrix, annot=True).get_figure(), epoch)
 
         epoch+=1
 
