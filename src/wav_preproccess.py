@@ -19,7 +19,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
 
     melspec_transform = T.MelSpectrogram(
         sample_rate=sample_rate,
-        n_fft = n_fft, 
+        n_fft = n_fft,
         hop_length=hop_length,
         n_mels = n_mels,
     )
@@ -44,6 +44,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
             wav_file, sample_rate = sf.read(wav_path, dtype="float32")
 
             wav_file = torch.from_numpy(wav_file)
+            wav_file = torch.nn.functional.pad(wav_file, (0, Sample_rate - wav_file.numel()), value=0.0)
 
             if wav_file.ndim == 1:
                 wav_file = wav_file.unsqueeze(0)
@@ -60,13 +61,6 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
 
             wav_melspec = melspec_transform(wav_file)
 
-            if Target_T is not None: #выравнивание по длительности
-                T_current = wav_melspec.shape[-1]
-                if T_current < Target_T:
-                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, Target_T - T_current), value=9.8931)
-                else:
-                    wav_melspec = wav_melspec[..., :Target_T]
-
             total += torch.sum(wav_melspec.flatten())
             total_sq += torch.sum(wav_melspec.flatten() ** 2)
             n += wav_melspec.numel()
@@ -75,6 +69,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, sample_rate = 
             torch.save(wav_melspec, os.path.join(DIR_TO_SAVE_TO, out_name))
 
             rows.append({"path": out_name, "label": label})
+
     print("creating df")
     df = pd.DataFrame(rows, columns=["path","label"])
     df.to_csv(DF_PATH, index=False)
