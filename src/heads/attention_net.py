@@ -26,8 +26,7 @@ class AttentionCompleteNet(nn.Module):
         self.softmax = nn.Softmax(dim=2)
 
     def forward(self, x):
-        # B x T x 128
-        x = x.permute(0, 2, 1)  # B x 128 x T
+        # B x 128 x T
         T = x.shape[2]
         q = x[:, :, T//2]  # B x 1? x 128
         q = self.query_projection(q)  # B x 1? x 128
