@@ -97,7 +97,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
 
         metrics_loss = evaluate(model, validate_loader, num_classes, loss, device)
         
-        print(metrics_loss)
+        print(f'accuracy: {metrics_loss["accuracy"]}, validation loss: {metrics_loss["validation loss"]}')
 
         val_loss = metrics_loss["validation loss"]
         val_acc = metrics_loss["accuracy"]
