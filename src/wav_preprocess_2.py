@@ -7,6 +7,7 @@ import torchaudio.transforms as T
 DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
 DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/speech_commands_v0.01")
 DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
+DIR_TO_SAVE_TO_MFCC = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed_mfcc")
 DF_PATH = os.path.join(DIR_TO_SAVE_TO, "DF.csv")
 
 Sample_rate = 16000
@@ -86,7 +87,7 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, transform_func
             if target_T is not None: #выравнивание по длительности
                 T_current = wav_melspec.shape[-1]
                 if T_current < target_T:
-                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, target_T - T_current), value=9.8931)
+                    wav_melspec = torch.nn.functional.pad(wav_melspec, (0, target_T - T_current), value=0)
                 else:
                     wav_melspec = wav_melspec[..., :target_T]
 
@@ -106,6 +107,10 @@ def transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, transform_func
     var = total_sq/n - (total/n)**2
     return avg, torch.sqrt(var)
 
+
 if __name__ == "__main__":
-    avg, std = transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, Sample_rate, N_fft, N_mels, Hop_length)
+    func, target_T = get_melspec_transform_func()
+    avg, std = transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO, func, target_T)
+    func, target_T = get_mfcc_transform_func()
+    avg, std = transform_wavs_to_tensors(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO_MFCC, func, target_T)
     print(avg, std)

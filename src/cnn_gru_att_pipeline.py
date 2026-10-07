@@ -16,6 +16,9 @@ from union_net import UnionNet
 from wav_preproccess import DIR_TO_SAVE_TO, DF_PATH
 from wav_preproccess import N_mels, Target_T
 
+Target_T = sample_rate // hop_length + 1
+
+
 BATCH_SIZE = 32
 LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
 LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
