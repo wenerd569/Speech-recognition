@@ -4,8 +4,8 @@ from torch.utils.data import Dataset
 import os
 import pandas as pd
 
-AVG = 9.8931
-STD = 210.8841
+AVG = 9.8932
+STD = 210.8802
 
 class MelSpecDataset(Dataset):
 
