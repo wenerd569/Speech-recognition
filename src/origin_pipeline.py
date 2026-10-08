@@ -16,7 +16,7 @@ from union_net import UnionNet
 from wav_preproccess import DIR_TO_SAVE_TO, DF_PATH
 from wav_preproccess import N_mels, Target_T
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
 LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
 NUM_CLASSES = len(LABELS)
@@ -26,9 +26,9 @@ SAVE_TO_2 = os.path.join(DIR_PROJECT, "models/test2.pt")
 BASE_NET_INPUT_SHAPE = (32, 1, N_mels, Target_T)
 
 
-def get_loader(df_csv_name: str):
+def get_loader(df_csv_name, device, place):
     df_train = pd.read_csv(os.path.join(DIR_TO_SAVE_TO, df_csv_name))
-    dataset = MelSpecDataset(df_train, DIR_TO_SAVE_TO, LABEL_TO_INDEX)
+    dataset = MelSpecDataset(df_train, DIR_TO_SAVE_TO, device, LABEL_TO_INDEX, place)
     train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     return train_loader
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()
 
-    train_loader = get_loader("df_train.csv")
-    validation_loader = get_loader("df_validation.csv")
+    train_loader = get_loader("df_train.csv", device, "vram")
+    validation_loader = get_loader("df_validation.csv", device, "vram")
 
     train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=None)
