@@ -1,13 +1,16 @@
+from sympy.printing.tree import tree
+from settings import TrainSettings
 import numpy as np
 import pandas as pd
 import torch
 
-from wav_preproccess import DF_PATH
-LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
-LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
-NUM_CLASSES = len(LABELS)
 
-def metrics_and_loss(model, dataloader, loss, device):
+
+def metrics_and_loss(model, dataloader, loss, device, train_settings: TrainSettings):
+    DF_PATH = train_settings.get_df_path()
+    LABELS_TO_INDEX = train_settings.get_labels_to_index()
+    NUM_CLASSES = train_settings.get_num_classes
+
     with torch.no_grad():
         was_training = model.training
         model.eval()
