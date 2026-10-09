@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     print("device: ", device)
 
-    base_cnn = BaseNet(kernel_sizes=[(5,1),(5,1)], channels=[10,1])
+    base_cnn = BaseNet(kernel_sizes=[(1,5),(1,5)], channels=[10,1])
 
     lstm_net = LSTMNet(input_features=N_mels)
     attention_net = AttentionCompleteNet(output_features=NUM_CLASSES)
