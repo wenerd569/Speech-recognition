@@ -1,14 +1,12 @@
-from sympy import true
-from common.settings import TrainSettings
-import os
-import soundfile as sf
-import pandas as pd
-import torch
 import json
+import os
+
+import pandas as pd
+import soundfile as sf
+import torch
 import torchaudio.transforms as T
 
 from common.settings import TrainSettings
-
 
 
 def get_melspec_transform_func(settings):
@@ -118,6 +116,7 @@ def transform_wavs_to_tensors(path_settings: TrainSettings, transform_func, sett
     with open(settings_file_name, "w") as file:
         json.dump(settings, file, indent=4)
     
+    # pyrefly: ignore [bad-argument-type]
     return avg, torch.sqrt(var)
 
 
@@ -125,22 +124,35 @@ if __name__ == "__main__":
     settings_melspec = {}
     
     settings_melspec["type"] = "melspec"
+    # pyrefly: ignore [unsupported-operation]
     settings_melspec["duration"] = 1
+    # pyrefly: ignore [unsupported-operation]
     settings_melspec["log_flag"] = True
+    # pyrefly: ignore [unsupported-operation]
     settings_melspec["sample_rate"] = 16000
+    # pyrefly: ignore [unsupported-operation]
     settings_melspec["n_mels"] = 128
+    # pyrefly: ignore [unsupported-operation]
     settings_melspec["n_fft"] = 1024
+    # pyrefly: ignore [unsupported-operation]
     settings_melspec["hop_length"] = 128
 
     settings_mfcc = {}
 
     settings_mfcc["type"] = "mfcc"
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["log_flag"] = False
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["duration"] = 1
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["sample_rate"] = 16000
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["n_mels"] = 80
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["hop_length"] = 160
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["n_fft"] = 400
+    # pyrefly: ignore [unsupported-operation]
     settings_mfcc["n_mfcc"] = 20
 
     path_settings = TrainSettings()

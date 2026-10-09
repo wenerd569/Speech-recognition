@@ -1,18 +1,16 @@
-from sympy.printing.tree import tree
 import sys
-import torch.nn as nn
+
+from torch import nn
 from torch.optim import Adam
 from torch.optim.lr_scheduler import LambdaLR
 
-from train_evaluate import train, step_decay
-
+from common.settings import TrainSettings
+from common.utils import get_device, get_loader, get_XY
+from nn_modules.attention_net import AttentionCompleteNet
 from nn_modules.base_net import BaseNet
 from nn_modules.lstm_net import LSTMNet
-from nn_modules.attention_net import AttentionCompleteNet
 from nn_modules.union_net import UnionNet
-
-from common.settings import TrainSettings
-from common.utils import get_device, get_XY, get_loader
+from train_evaluate import step_decay, train
 
 if __name__ == "__main__":
 

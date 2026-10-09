@@ -1,20 +1,16 @@
-from sympy.printing.tree import tree
-from common.settings import TrainSettings
-import numpy as np
-import pandas as pd
 import torch
 
+from common.settings import TrainSettings
 
 
 def metrics_and_loss(model, dataloader, loss, device, train_settings: TrainSettings):
-    DF_PATH = train_settings.get_df_path()
-    LABELS_TO_INDEX = train_settings.get_labels_to_index()
     NUM_CLASSES = train_settings.get_num_classes
 
     with torch.no_grad():
         was_training = model.training
         model.eval()
 
+        # pyrefly: ignore [no-matching-overload]
         matrix = torch.zeros((NUM_CLASSES, NUM_CLASSES), dtype=torch.long, device=device)
         hits = 0
         total = 0

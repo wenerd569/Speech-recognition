@@ -1,9 +1,8 @@
-import torch
-from torch import nn
-from torch.utils.data import Dataset
-from exceptions.exceptions import WrongDatasetSettingsException
 import os
+
 import pandas as pd
+import torch
+from torch.utils.data import Dataset
 
 AVG = 9.8932
 STD = 210.8802
@@ -24,6 +23,7 @@ class MelSpecDataset(Dataset):
         }
 
 
+        # pyrefly: ignore [unsupported-operation]
         self.labels = torch.tensor([label_to_index[l] for l in df["label"]])
         self.paths = self.df["path"].tolist()
         self.place = place_to_store_dataset
@@ -57,6 +57,7 @@ class MelSpecDataset(Dataset):
 
     def __getitem__(self, index):
         if self.place != "storage":
+            # pyrefly: ignore [unsupported-operation]
             return (self.data[index] - AVG)/STD, self.labels[index]
         else:
             melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]),map_location="cpu")

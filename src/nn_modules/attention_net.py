@@ -1,4 +1,4 @@
-import torch.nn as nn
+from torch import nn
 
 
 class AttentionCompleteNet(nn.Module):
@@ -6,7 +6,7 @@ class AttentionCompleteNet(nn.Module):
         self, output_features: int, hidden_size: int = 128
     ):
         # B x T x 128
-        super(AttentionCompleteNet, self).__init__()
+        super().__init__()
         self.query_projection = nn.Linear(
             in_features=1 * hidden_size, out_features=1 * hidden_size
         )
