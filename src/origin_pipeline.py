@@ -9,10 +9,25 @@ from common.utils import get_device, get_loader, get_XY
 from nn_modules.attention_net import AttentionCompleteNet
 from nn_modules.base_net import BaseNet
 from nn_modules.lstm_net import LSTMNet
+from nn_modules.mean_net import MeanNet
+from nn_modules.gru_net import GruNet
+from nn_modules.transformer_net import TransformerNet
+
 from nn_modules.union_net import UnionNet
 from train_evaluate import step_decay, train
 
 if __name__ == "__main__":
+
+    
+
+
+
+
+
+
+
+
+
 
     if len(sys.argv) != 2:
         raise Exception("1 аргумент - путь до файла настроек")
@@ -27,13 +42,19 @@ if __name__ == "__main__":
     
     target_T, n_mels = get_XY(train_settings)
 
+    nets = {
+        "base51": lambda: BaseNet(kernel_sizes=[(5, 1), (5, 1)], channels=[10, 1]),
+        "lstm64": lambda: LSTMNet(input_features=n_mels),
+        "gru": lambda: GruNet(input_features=n_mels),
+        "att128": lambda: AttentionCompleteNet(output_features=num_classes),
+        "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
+        "transformer": lambda: TransformerNet(input_features=n_mels),
+    }
 
-    base_cnn = BaseNet(kernel_sizes=[(5,1),(5,1)], channels=[10,1])
+    parts_names = train_settings.get_parts()
+    parts = [nets[x]() for x in parts_names]
 
-    lstm_net = LSTMNet(input_features=n_mels)
-    attention_net = AttentionCompleteNet(output_features=num_classes)
-
-    net = UnionNet([base_cnn, lstm_net, attention_net])
+    net = UnionNet(parts)
 
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()

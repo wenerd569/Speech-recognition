@@ -52,6 +52,7 @@ class TrainSettings:
         self._df_path = self._resolve_path(base_settings["df_path"])
 
         self._epoch_count = base_settings["epoch_count"]
+        self._parts = config["parts"]
 
     def _resolve_path(self, path):
         if not os.path.isabs(path):
@@ -93,3 +94,6 @@ class TrainSettings:
     
     def get_epoch_count(self):
         return self._epoch_count
+
+    def get_parts(self):
+        return self._parts
