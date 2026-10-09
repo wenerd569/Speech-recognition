@@ -28,7 +28,7 @@ DEFAULT_SETTINGS_FILE = os.path.join(PROJECT_ROOT, "path_conf.conf")
 
 
 
-DEFAULT_TRAIN_SETTINGS_FILE = os.path.join(PROJECT_ROOT, "train_settings.json")
+DEFAULT_TRAIN_SETTINGS_FILE = os.path.join(PROJECT_ROOT, "train_settings_template_V1.json")
 
 class TrainSettings:
 
