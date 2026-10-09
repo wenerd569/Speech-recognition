@@ -21,7 +21,7 @@ class MelSpecDataset(Dataset):
         self.label_to_index = label_to_index or {
             label: index for index, label in enumerate(sorted(df["label"].drop_duplicates()))
         }
-        self.labels = torch.tensor([label_to_index[l] for l in df["label"]])
+        self.labels = torch.tensor([self.label_to_index[l] for l in df["label"]])
         self.paths = self.df["path"].tolist()
         self.place = place_to_store_dataset
         map_location = device if self.place == 'vram' else 'cpu'
