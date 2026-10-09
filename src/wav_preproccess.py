@@ -136,6 +136,7 @@ if __name__ == "__main__":
     path_settings = TrainSettings()
     settings = load_settings()
     print(settings)
+    # melspec_setings or mfcc_setings
     key = sys.argv[1] if len(sys.argv) > 1 else "melspec_settings"
 
     
