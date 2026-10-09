@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.utils.data import Dataset
-from exceptions import WrongDatasetSettingsException
+from exceptions.exceptions import WrongDatasetSettingsException
 import os
 import pandas as pd
 

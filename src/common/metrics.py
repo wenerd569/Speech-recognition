@@ -1,5 +1,5 @@
 from sympy.printing.tree import tree
-from settings import TrainSettings
+from common.settings import TrainSettings
 import numpy as np
 import pandas as pd
 import torch

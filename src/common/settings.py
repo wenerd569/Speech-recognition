@@ -2,10 +2,10 @@
 import configparser
 import json
 import os
-from exceptions import WordInManyClassesException
+from exceptions.exceptions import WordInManyClassesException
 
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_SETTINGS_FILE = os.path.join(PROJECT_ROOT, "path_conf.conf")
 
 

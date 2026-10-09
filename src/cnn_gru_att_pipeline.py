@@ -8,10 +8,10 @@ from torch.utils.data import DataLoader
 from train_evaluate import train
 
 from data_preparing import MelSpecDataset
-from base_net import BaseNet
-from heads.gru_net import GruNet
-from heads.attention_net import AttentionCompleteNet
-from union_net import UnionNet
+from nn_modules.base_net import BaseNet
+from nn_modules.gru_net import GruNet
+from nn_modules.attention_net import AttentionCompleteNet
+from nn_modules.union_net import UnionNet
 
 from wav_preproccess import DIR_TO_SAVE_TO, DF_PATH
 from wav_preproccess import N_mels, Target_T

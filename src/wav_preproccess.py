@@ -1,5 +1,5 @@
 from sympy import true
-from settings import TrainSettings
+from common.settings import TrainSettings
 import os
 import soundfile as sf
 import pandas as pd
@@ -7,7 +7,7 @@ import torch
 import json
 import torchaudio.transforms as T
 
-from settings import TrainSettings
+from common.settings import TrainSettings
 
 
 

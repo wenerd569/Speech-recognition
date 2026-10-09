@@ -6,13 +6,13 @@ from torch.optim.lr_scheduler import LambdaLR
 
 from train_evaluate import train, step_decay
 
-from base_net import BaseNet
-from heads.lstm_net import LSTMNet
-from heads.attention_net import AttentionCompleteNet
-from union_net import UnionNet
+from nn_modules.base_net import BaseNet
+from nn_modules.lstm_net import LSTMNet
+from nn_modules.attention_net import AttentionCompleteNet
+from nn_modules.union_net import UnionNet
 
-from settings import TrainSettings
-from base_pipeline import get_device, get_XY, get_loader
+from common.settings import TrainSettings
+from common.utils import get_device, get_XY, get_loader
 
 if __name__ == "__main__":
 

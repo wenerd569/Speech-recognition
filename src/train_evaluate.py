@@ -1,7 +1,7 @@
 # from torchmetrics import Accuracy, F1Score, Precision, Recall
 import torch
 import os
-from metrics import metrics_and_loss
+from common.metrics import metrics_and_loss
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import seaborn as sb
@@ -154,6 +154,5 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
     print(f'best metrics: {best_metrics}')
 
     save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
-
 
 
