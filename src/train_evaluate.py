@@ -5,6 +5,7 @@ from metrics import metrics_and_loss
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import seaborn as sb
+import math
 
 def evaluate(model, dataloader, num_classes, loss, device):
     with torch.no_grad():
@@ -18,7 +19,7 @@ def evaluate(model, dataloader, num_classes, loss, device):
 
         return metrics_and_loss(model, dataloader, loss, device)
 
-def save_model(model, optimizer, epoch, best_metrics, best_val_loss, save_path):
+def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path):
     dir = os.path.dirname(save_path)
     os.makedirs(dir, exist_ok=True)
 
@@ -26,18 +27,20 @@ def save_model(model, optimizer, epoch, best_metrics, best_val_loss, save_path):
         "epoch": epoch,
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
+        "scheduler_state_dict": scheduler.state_dict(),
         "best_metrics": best_metrics,
         "best_val_loss": best_val_loss,
     }, save_path)
 
     print(f"saved model to: {save_path}")
 
-def load_model(model, optimizer, load_path, device):
+def load_model(model, optimizer, scheduler, load_path, device):
 
     dct = torch.load(load_path, map_location=device)
 
     model.load_state_dict(dct["model_state_dict"])
     optimizer.load_state_dict(dct["optimizer_state_dict"])
+    scheduler.load_state_dict(dct["scheduler_state_dict"])
 
     start_epoch = dct["epoch"]
     best_val_loss = dct["best_val_loss"]
@@ -48,7 +51,16 @@ def load_model(model, optimizer, load_path, device):
 
     return start_epoch, best_val_loss, best_metrics
 
-def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, num_classes, device, eps, epochs_to_wait, save_path, ask = False, load_path = None):
+def step_decay(epoch):
+    initial_lrate = 0.001
+    drop = 0.4
+    epochs_drop = 15.0
+    lrate = initial_lrate * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
+    if lrate < 4e-5:
+        lrate = 4e-5
+    return lrate
+
+def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, scheduler, num_classes, device, eps, epochs_to_wait, save_path, ask = False, load_path = None):
     model.to(device)
 
     best_val_loss = float("inf")
@@ -57,7 +69,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
     start_epoch = 0
 
     if load_path is not None:
-        start_epoch, best_val_loss, best_metrics = load_model(model, optimizer,load_path, device)
+        start_epoch, best_val_loss, best_metrics = load_model(model, optimizer, scheduler, load_path, device)
 
     epoch = start_epoch
 
@@ -109,6 +121,10 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
 
         writer.add_figure("confusion matrix", sb.heatmap(confusion_matrix, annot=True).get_figure(), epoch)
 
+        scheduler.step()
+        current_lr = optimizer.param_groups[0]["lr"]
+        print(f'lr after epoch {epoch}: {current_lr}')
+
         epoch+=1
 
         if val_loss < best_val_loss - eps:
@@ -118,7 +134,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
         else:
             epochs_without_improvement+=1
 
-        save_model(model, optimizer, epoch, best_metrics, best_val_loss, save_path)
+        save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
 
         if epochs_without_improvement >= epochs_to_wait:
             if ask:
@@ -137,7 +153,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, nu
     print(f'finished, best_val_loss: {best_val_loss}')
     print(f'best metrics: {best_metrics}')
 
-    save_model(model, optimizer, epoch, best_metrics, best_val_loss, save_path)
+    save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
 
 
 

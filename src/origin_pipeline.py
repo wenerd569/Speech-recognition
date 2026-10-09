@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 
-from train_evaluate import train
+from train_evaluate import train, step_decay
 
 from data_preparing import MelSpecDataset
 from base_net import BaseNet
@@ -52,8 +52,9 @@ if __name__ == "__main__":
 
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: step_decay(epoch)/0.001)
 
     train_loader = get_loader("df_train.csv", device, "vram")
     validation_loader = get_loader("df_validation.csv", device, "vram")
 
-    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=None)
+    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=None)
