@@ -22,8 +22,7 @@ class MelSpecDataset(Dataset):
         self.label_to_index = label_to_index or {
             label: index for index, label in enumerate(sorted(df["label"].drop_duplicates()))
         }
-        if set(label_to_index.keys()) != set(df["label"].drop_duplicates()):
-            raise WrongDatasetSettingsException()
+
 
         self.labels = torch.tensor([label_to_index[l] for l in df["label"]])
         self.paths = self.df["path"].tolist()

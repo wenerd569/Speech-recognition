@@ -1,8 +1,10 @@
+from sympy.printing.tree import tree
 import sys
 import torch.nn as nn
 from torch.optim import Adam
+from torch.optim.lr_scheduler import LambdaLR
 
-from train_evaluate import train
+from train_evaluate import train, step_decay
 
 from base_net import BaseNet
 from heads.lstm_net import LSTMNet
@@ -37,8 +39,10 @@ if __name__ == "__main__":
 
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()
+    scheduler = LambdaLR(optimizer, lr_lambda=lambda epoch: step_decay(epoch)/0.001)
+
 
     train_loader = get_loader("df_train.csv", device, train_settings)
     validation_loader = get_loader("df_validation.csv", device, train_settings)
 
-    train(net, epochs=train_loader.get_epoch_count, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=None)
+    train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=2, save_path=train_settings.get_model_saving_path(), load_path=None)
