@@ -134,13 +134,18 @@ def load_settings(path=os.path.join(os.path.dirname(os.path.dirname(os.path.absp
 
 if __name__ == "__main__":
 
-    path_settings = TrainSettings()
-    dataset = torchaudio.datasets.SPEECHCOMMANDS(root=os.path.dirname(os.path.dirname(path_settings.get_dir_to_upload_from())), url = "speech_commands_v0.01", download=True)
+    if len(sys.argv) > 1:
+        path_settings = TrainSettings(sys.argv[1])
+    else:
+        path_settings = TrainSettings()
+
+    url = sys.argv[2] if len(sys.argv) > 2 else "speech_commands_v0.01"
+    dataset = torchaudio.datasets.SPEECHCOMMANDS(root=os.path.dirname(os.path.dirname(path_settings.get_dir_to_upload_from())), url = url, download=True)
     print('downloaded dataset')
     settings = load_settings()
     print(settings)
     # melspec_setings or mfcc_setings
-    key = sys.argv[1] if len(sys.argv) > 1 else "melspec_settings"
+    key = sys.argv[3] if len(sys.argv) > 3 else "melspec_settings"
 
     
     transform_func, settings = get_transform_func(settings[key])
