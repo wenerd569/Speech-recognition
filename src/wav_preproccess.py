@@ -43,7 +43,7 @@ def get_mfcc_transform_func(settings):
             "n_fft": settings["n_fft"],
             "hop_length": settings["hop_length"],
             "n_mels": settings["n_mels"]
-        }
+        },
     ), settings
 
 
