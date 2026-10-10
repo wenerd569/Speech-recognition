@@ -15,7 +15,7 @@ from nn_modules.gru_net import GruNet
 from nn_modules.transformer_net import TransformerNet
 
 from nn_modules.union_net import UnionNet
-from train_evaluate import step_decay, train
+from train_evaluate import step_decay_mult, train
 
 if __name__ == "__main__":
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()
-    scheduler = LambdaLR(optimizer, lr_lambda=lambda epoch: step_decay(epoch)/0.001)
+    scheduler = LambdaLR(optimizer, lr_lambda=step_decay_mult)
 
 
     train_loader = get_loader("df_train.csv", device, train_settings)
