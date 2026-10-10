@@ -1,0 +1,56 @@
+
+{
+    "base_settings": {
+        "batch_size": 256,
+        "epoch_count": 60,
+        "model_saving_path": "models/model.pt",
+        "place_to_store_dataset": "vram",
+
+        "dir_to_upload_from": "data/speech_commands_v0.02",
+        "dir_to_save_to": "data/data_proccessed",
+        "df_path": "data/data_proccessed/DF.csv"
+    },
+    "parts": [
+        "base51",
+        "lstm", 
+        "att128"
+    ],
+    "classes": [
+        ["_background_noise_"],
+        ["backward"],
+        ["bed"],
+        ["bird"],
+        ["cat"],
+        ["dog"],
+        ["down"],
+        ["eight"],
+        ["five"],
+        ["follow"],
+        ["forward"],
+        ["four"],
+        ["go"],
+        ["happy"],
+        ["house"],
+        ["learn"],
+        ["left"],
+        ["marvin"],
+        ["nine"],
+        ["no"],
+        ["off"],
+        ["on"],
+        ["one"],
+        ["right"],
+        ["seven"],
+        ["sheila"],
+        ["six"],
+        ["stop"],
+        ["three"],
+        ["tree"],
+        ["two"],
+        ["up"],
+        ["visual"],
+        ["wow"],
+        ["yes"],
+        ["zero"]
+    ]
+}
