@@ -21,6 +21,7 @@ def make_melspec(settings):
 
 def make_mfcc(settings):
     return T.MFCC(
+        log_mels = True,
         sample_rate=settings["sample_rate"],
         n_mfcc=settings["n_mfcc"],
         melkwargs={
