@@ -43,8 +43,8 @@ if __name__ == "__main__":
     target_T, n_mels = get_XY(train_settings)
 
     nets = {
-        "base51": lambda: BaseNet(kernel_sizes=[(5, 1), (5, 1)], channels=[10, 1]),
-        "lstm64": lambda: LSTMNet(input_features=n_mels),
+        "base51": lambda: BaseNet(kernel_sizes=[(1, 5), (1, 5)], channels=[10, 1]),
+        "lstm64": lambda **kwargs: LSTMNet(input_features=n_mels, **kwargs),
         "gru": lambda: GruNet(input_features=n_mels),
         "att128": lambda: AttentionCompleteNet(output_features=num_classes),
         "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),

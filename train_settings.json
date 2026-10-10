@@ -10,7 +10,11 @@
         "dir_to_save_to": "data/data_proccessed",
         "df_path": "data/data_proccessed/DF.csv"
     },
-    "parts": ["base51", "lstm64", "att128"],
+    "parts": [
+        "base51", 
+        "lstm", 
+        "att128"
+    ],
     "classes": [
         ["_background_noise_"],
         ["backward"],
