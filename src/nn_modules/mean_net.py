@@ -1,11 +1,10 @@
-import torch.nn as nn
 import torch
-import numpy as np
+from torch import nn
 
 
 class MeanNet(nn.Module):
     def __init__(self, output_features: int, input_features: int):
-        super(MeanNet, self).__init__()
+        super().__init__()
         self.output_features = output_features
         self.linear = nn.Linear(input_features, output_features)
         self.logsoftmax = nn.LogSoftmax(dim=1)

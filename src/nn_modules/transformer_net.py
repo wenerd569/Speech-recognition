@@ -1,10 +1,12 @@
 import math
-import torch.nn as nn
+
 import torch
+from torch import nn
+
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
+        super().__init__()
         self.dropout = nn.Dropout(p=dropout)
 
         pe = torch.zeros(max_len, d_model)
@@ -22,7 +24,7 @@ class PositionalEncoding(nn.Module):
 
 class TransformerNet(nn.Module):
     def __init__(self, input_features: int, hidden_size: int = 256, num_layers: int = 2, num_heads: int = 4):
-        super(TransformerNet, self).__init__()
+        super().__init__()
 
         self.pe = PositionalEncoding(d_model=input_features)
         layer = nn.TransformerEncoderLayer(

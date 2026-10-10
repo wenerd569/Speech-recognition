@@ -1,60 +1,59 @@
+import sys
 import os
-import pandas as pd
-import torch
-import torch.nn as nn
+
+from torch import nn
 from torch.optim import Adam
-from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import LambdaLR
 
-from train_evaluate import train, step_decay
+from common.settings import TrainSettings
+from common.utils import get_device, get_loader, get_XY
+from nn_modules.attention_net import AttentionCompleteNet
+from nn_modules.base_net import BaseNet
+from nn_modules.lstm_net import LSTMNet
+from nn_modules.mean_net import MeanNet
+from nn_modules.gru_net import GruNet
+from nn_modules.transformer_net import TransformerNet
 
-from data_preparing import MelSpecDataset
-from base_net import BaseNet
-from heads.lstm_net import LSTMNet
-from heads.attention_net import AttentionCompleteNet
-from union_net import UnionNet
-
-from wav_preproccess import DIR_TO_SAVE_TO, DF_PATH
-from wav_preproccess import N_mels, Target_T
-
-BATCH_SIZE = 64
-LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
-LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
-NUM_CLASSES = len(LABELS)
-DIR_PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SAVE_TO = os.path.join(DIR_PROJECT, "models/test.pt")
-SAVE_TO_2 = os.path.join(DIR_PROJECT, "models/test2.pt")
-BASE_NET_INPUT_SHAPE = (32, 1, N_mels, Target_T)
-
-
-def get_loader(df_csv_name, device, place):
-    df_train = pd.read_csv(os.path.join(DIR_TO_SAVE_TO, df_csv_name))
-    dataset = MelSpecDataset(df_train, DIR_TO_SAVE_TO, device, LABEL_TO_INDEX, place)
-    train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-    return train_loader
+from nn_modules.union_net import UnionNet
+from train_evaluate import step_decay, train
 
 if __name__ == "__main__":
 
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
-    elif torch.backends.mps.is_available():
-        device = torch.device("mps")
-    else:
-        device = torch.device("cpu")
+    #if len(sys.argv) != 2:
+    #    raise Exception("1 аргумент - путь до файла настроек")
 
+    device = get_device()
     print("device: ", device)
 
-    base_cnn = BaseNet(kernel_sizes=[(5,1),(5,1)], channels=[10,1])
+    if len(sys.argv) > 1:
+        train_settings = TrainSettings(sys.argv[1])
+    else:
+        train_settings = TrainSettings()
+        
+    num_classes = train_settings.get_num_classes()
+    
+    target_T, n_mels = get_XY(train_settings)
 
-    lstm_net = LSTMNet(input_features=N_mels)
-    attention_net = AttentionCompleteNet(output_features=NUM_CLASSES)
+    nets = {
+        "base15": lambda: BaseNet(kernel_sizes=[(1, 5), (1, 5)], channels=[10, 1]),
+        "lstm64": lambda: LSTMNet(input_features=n_mels),
+        "gru": lambda: GruNet(input_features=n_mels),
+        "att128": lambda: AttentionCompleteNet(output_features=num_classes),
+        "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
+        "transformer": lambda: TransformerNet(input_features=n_mels),
+    }
 
-    net = UnionNet([base_cnn, lstm_net, attention_net])
+    parts_names = train_settings.get_parts()
+    parts = [nets[x]() for x in parts_names]
+
+    net = UnionNet(parts)
 
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: step_decay(epoch)/0.001)
+    scheduler = LambdaLR(optimizer, lr_lambda=lambda epoch: step_decay(epoch)/0.001)
 
-    train_loader = get_loader("df_train.csv", device, "vram")
-    validation_loader = get_loader("df_validation.csv", device, "vram")
 
-    train(net, epochs=40, train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=NUM_CLASSES, device=device, eps=0.001, epochs_to_wait=2, save_path=SAVE_TO_2, load_path=None)
+    train_loader = get_loader("df_train.csv", device, train_settings)
+    validation_loader = get_loader("df_validation.csv", device, train_settings)
+
+    train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=2, save_path=train_settings.get_model_saving_path(), load_path=None)

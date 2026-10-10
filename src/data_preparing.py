@@ -1,8 +1,10 @@
-import torch
-from torch import nn
-from torch.utils.data import Dataset
 import os
+import sys
+
 import pandas as pd
+import torch
+from torch.utils.data import Dataset
+from common.settings import TrainSettings
 
 AVG = 9.8932
 STD = 210.8802
@@ -21,6 +23,9 @@ class MelSpecDataset(Dataset):
         self.label_to_index = label_to_index or {
             label: index for index, label in enumerate(sorted(df["label"].drop_duplicates()))
         }
+
+
+        # pyrefly: ignore [unsupported-operation]
         self.labels = torch.tensor([label_to_index[l] for l in df["label"]])
         self.paths = self.df["path"].tolist()
         self.place = place_to_store_dataset
@@ -54,6 +59,7 @@ class MelSpecDataset(Dataset):
 
     def __getitem__(self, index):
         if self.place != "storage":
+            # pyrefly: ignore [unsupported-operation]
             return (self.data[index] - AVG)/STD, self.labels[index]
         else:
             melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]),map_location="cpu")
@@ -92,10 +98,11 @@ def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
 
     return df_train, df_test, df_validation
 
-
-DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
-DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/speech_commands_v0.01")
-DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
-
 if __name__ == "__main__":
-    init_datasets(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO)
+
+    if len(sys.argv) > 1:
+        path_settings = TrainSettings(sys.argv[1])
+    else:
+        path_settings = TrainSettings()
+
+    init_datasets(path_settings.get_dir_to_upload_from(), path_settings.get_dir_to_save_to())
