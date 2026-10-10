@@ -1,8 +1,9 @@
-import torch.nn as nn
+from torch import nn
+
 
 class LSTMNet(nn.Module):
     def __init__(self, input_features: int, hidden_size: int = 64, num_layers: int = 2):
-        super(LSTMNet, self).__init__()
+        super().__init__()
         self.output_features = 2 * hidden_size
 
         self.features = nn.LSTM(

@@ -1,9 +1,9 @@
-import torch.nn as nn
-import torch
+from torch import nn
+
 
 class BaseNet(nn.Module):
     def __init__(self, kernel_sizes: list, channels: list):
-        super(BaseNet, self).__init__()
+        super().__init__()
         
         self.features = nn.Sequential(
             nn.Conv2d(1, channels[0], kernel_size=kernel_sizes[0], padding="same"),

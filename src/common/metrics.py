@@ -1,17 +1,15 @@
-import numpy as np
-import pandas as pd
 import torch
 
-from wav_preproccess import DF_PATH
-LABELS = sorted(pd.read_csv(DF_PATH)["label"].unique())
-LABEL_TO_INDEX = {label: index for index, label in enumerate(LABELS)}
-NUM_CLASSES = len(LABELS)
+from common.settings import TrainSettings
 
-def metrics_and_loss(model, dataloader, loss, device):
+
+def metrics_and_loss(model, dataloader, loss, device, NUM_CLASSES: TrainSettings):
+
     with torch.no_grad():
         was_training = model.training
         model.eval()
 
+        # pyrefly: ignore [no-matching-overload]
         matrix = torch.zeros((NUM_CLASSES, NUM_CLASSES), dtype=torch.long, device=device)
         hits = 0
         total = 0
