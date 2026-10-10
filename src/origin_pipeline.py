@@ -1,4 +1,5 @@
 import sys
+import os
 
 from torch import nn
 from torch.optim import Adam
@@ -18,21 +19,23 @@ from train_evaluate import step_decay, train
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        raise Exception("1 аргумент - путь до файла настроек")
-    
-    settings_file_name = sys.argv[1]
+    #if len(sys.argv) != 2:
+    #    raise Exception("1 аргумент - путь до файла настроек")
 
     device = get_device()
     print("device: ", device)
-    
-    train_settings = TrainSettings(settings_file_name)
+
+    if len(sys.argv) > 1:
+        train_settings = TrainSettings(sys.argv[1])
+    else:
+        train_settings = TrainSettings()
+        
     num_classes = train_settings.get_num_classes()
     
     target_T, n_mels = get_XY(train_settings)
 
     nets = {
-        "base51": lambda: BaseNet(kernel_sizes=[(5, 1), (5, 1)], channels=[10, 1]),
+        "base15": lambda: BaseNet(kernel_sizes=[(1, 5), (1, 5)], channels=[10, 1]),
         "lstm64": lambda: LSTMNet(input_features=n_mels),
         "gru": lambda: GruNet(input_features=n_mels),
         "att128": lambda: AttentionCompleteNet(output_features=num_classes),

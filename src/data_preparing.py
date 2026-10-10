@@ -1,8 +1,10 @@
 import os
+import sys
 
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
+from common.settings import TrainSettings
 
 AVG = 9.8932
 STD = 210.8802
@@ -102,4 +104,10 @@ DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/SpeechComm
 DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
 
 if __name__ == "__main__":
-    init_datasets(DIR_TO_UPLOAD_FROM, DIR_TO_SAVE_TO)
+
+    if len(sys.argv) > 1:
+        path_settings = TrainSettings(sys.argv[1])
+    else:
+        path_settings = TrainSettings()
+
+    init_datasets(path_settings.get_dir_to_upload_from(), path_settings.get_dir_to_save_to)
