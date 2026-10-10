@@ -54,6 +54,8 @@ class TrainSettings:
         self._epoch_count = base_settings["epoch_count"]
         self._parts = config["parts"]
 
+        self._dataset_url = config["base_settings"]["dir_to_upload_from"].split('/')[-1]
+
     def _resolve_path(self, path):
         if not os.path.isabs(path):
             path = os.path.join(PROJECT_ROOT, path)
@@ -97,3 +99,6 @@ class TrainSettings:
 
     def get_parts(self):
         return self._parts
+
+    def get_dataset_url(self):
+        return self._dataset_url

@@ -105,4 +105,4 @@ if __name__ == "__main__":
     else:
         path_settings = TrainSettings()
 
-    init_datasets(path_settings.get_dir_to_upload_from(), path_settings.get_dir_to_save_to)
+    init_datasets(path_settings.get_dir_to_upload_from(), path_settings.get_dir_to_save_to())

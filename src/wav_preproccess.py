@@ -139,7 +139,7 @@ if __name__ == "__main__":
     else:
         path_settings = TrainSettings()
 
-    url = sys.argv[2] if len(sys.argv) > 2 else "speech_commands_v0.01"
+    url = sys.argv[2] if len(sys.argv) > 2 else path_settings.get_dataset_url()
     dataset = torchaudio.datasets.SPEECHCOMMANDS(root=os.path.dirname(os.path.dirname(path_settings.get_dir_to_upload_from())), url = url, download=True)
     print('downloaded dataset')
     settings = load_settings()
