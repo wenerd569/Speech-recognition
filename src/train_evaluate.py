@@ -55,18 +55,16 @@ def load_model(model, optimizer, scheduler, load_path, device):
 
     return start_epoch, best_val_loss, best_metrics
 
-def step_decay(epoch):
-    initial_lrate = 0.001
+def step_decay_mult(epoch):
     drop = 0.4
-    epochs_drop = 15.0
-    lrate = initial_lrate * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
-    lrate = max(lrate, 4e-5)
-    return lrate
+    epochs_drop = 10.0
+    return max(math.pow(drop, math.floor(epoch / epochs_drop)), 0.04)
 
 def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, scheduler, num_classes, device, eps, epochs_to_wait, save_path, ask = False, load_path = None):
     model.to(device)
 
     best_val_loss = float("inf")
+    best_val_acc = float("-inf")
     epochs_without_improvement = 0
     best_metrics = None
     start_epoch = 0
@@ -129,16 +127,17 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
         current_lr = optimizer.param_groups[0]["lr"]
         print(f'lr after epoch {epoch}: {current_lr}')
 
-        epoch+=1
-
-        if val_loss < best_val_loss - eps:
-            best_val_loss = val_loss
+        if val_acc > best_val_acc + eps:
+            best_val_acc = val_acc
             best_metrics = metrics_loss
+            best_val_loss = val_loss
+            print('model is better, saving')
+            save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
             epochs_without_improvement = 0
         else:
             epochs_without_improvement+=1
 
-        save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
+        epoch+=1
 
         if epochs_without_improvement >= epochs_to_wait:
             if ask:
@@ -156,7 +155,5 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
 
     print(f'finished, best_val_loss: {best_val_loss}')
     print(f'best metrics: {best_metrics}')
-
-    save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
 
 
