@@ -1,0 +1,21 @@
+{
+    "melspec_settings": {
+        "type": "melspec",
+        "duration": 1,
+        "log_flag": 1,
+        "sample_rate": 16000,
+        "n_mels": 80,
+        "n_fft": 1024,
+        "hop_length": 128
+    },
+    "mfcc_settings": {
+        "type": "mfcc",
+        "log_flag": 0,
+        "duration": 1,
+        "sample_rate": 16000,
+        "n_mels": 80,
+        "hop_length": 160,
+        "n_fft": 400,
+        "n_mfcc": 20
+    }
+}

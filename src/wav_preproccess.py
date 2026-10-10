@@ -1,53 +1,64 @@
 import json
 import os
+import sys
 
 import pandas as pd
 import soundfile as sf
 import torch
 import torchaudio.transforms as T
+import torchaudio
 
 from common.settings import TrainSettings
 
-
-def get_melspec_transform_func(settings):
-
-    settings = settings.copy()
-
-    target_T = settings["sample_rate"] // settings["hop_length"] + 1
-    settings["target_T"] = target_T
-    settings["X"] = target_T
-    settings["Y"] = settings["n_mels"]
-
+# пик трансформера датасета
+def make_melspec(settings):
     return T.MelSpectrogram(
         sample_rate=settings["sample_rate"],
-        n_fft = settings["n_fft"], 
-        hop_length= settings["hop_length"],
-        n_mels = settings["n_mels"],
-    ), settings
+        n_fft=settings["n_fft"],
+        hop_length=settings["hop_length"],
+        n_mels=settings["n_mels"],
+    )
 
-
-def get_mfcc_transform_func(settings):
-
-    settings = settings.copy()
-    target_T = settings["sample_rate"] // settings["hop_length"] + 1
-
-    settings["target_T"] = target_T
-    settings["X"] = target_T
-    settings["Y"] = settings["n_mfcc"]
-
-    
+def make_mfcc(settings):
     return T.MFCC(
         sample_rate=settings["sample_rate"],
         n_mfcc=settings["n_mfcc"],
         melkwargs={
             "n_fft": settings["n_fft"],
             "hop_length": settings["hop_length"],
-            "n_mels": settings["n_mels"]
+            "n_mels": settings["n_mels"],
         },
-    ), settings
+    )
 
+transformer_funcs = {
+    "melspec":  make_melspec,
+    "mfcc": make_mfcc,
+}
 
+# настройка сеттингов
+def set_melspec(settings):
+    target_T = settings["sample_rate"] // settings["hop_length"] + 1
+    return target_T, settings["n_mels"]
 
+def set_mfcc(settings):
+    target_T = settings["sample_rate"] // settings["hop_length"] + 1
+    return target_T, settings["n_mfcc"]
+
+transformer_settings = {
+    "melspec":  set_melspec,
+    "mfcc": set_mfcc,
+}
+
+def get_transform_func(settings: dict):
+    settings = settings.copy()
+    tp = settings["type"]
+
+    target_T, Y = transformer_settings[tp](settings)
+    settings["target_T"] = target_T
+    settings["X"] = target_T
+    settings["Y"] = Y
+
+    return transformer_funcs[tp](settings), settings
 
 #TODO: спросить что ставить в параметры
 def transform_wavs_to_tensors(path_settings: TrainSettings, transform_func, settings): #см документацию к параметрам
@@ -62,9 +73,6 @@ def transform_wavs_to_tensors(path_settings: TrainSettings, transform_func, sett
     os.makedirs(DIR_TO_SAVE_TO, exist_ok=True)
     rows = []
     total, total_sq, n = 0, 0, 0
-
-
-    
 
     for root, _, files in os.walk(DIR_TO_UPLOAD_FROM):
         print("checking root ", root)
@@ -110,8 +118,8 @@ def transform_wavs_to_tensors(path_settings: TrainSettings, transform_func, sett
     settings_file_name = os.path.join(DIR_TO_SAVE_TO, "preprocess_settings.json")
     avg = total / n
     var = total_sq/n - (total/n)**2
-    settings["avg"] = avg
-    settings["var"] = var
+    settings["avg"] = float(avg)
+    settings["var"] = float(var)
 
     with open(settings_file_name, "w") as file:
         json.dump(settings, file, indent=4)
@@ -119,49 +127,31 @@ def transform_wavs_to_tensors(path_settings: TrainSettings, transform_func, sett
     # pyrefly: ignore [bad-argument-type]
     return avg, torch.sqrt(var)
 
+def load_settings(path=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"wav_preproccess_settings.json")):
+    with open(path, "r") as f:
+        return json.load(f)
+
 
 if __name__ == "__main__":
-    settings_melspec = {}
+
+    if len(sys.argv) > 1:
+        path_settings = TrainSettings(sys.argv[1])
+    else:
+        path_settings = TrainSettings()
+
+    url = sys.argv[2] if len(sys.argv) > 2 else path_settings.get_dataset_url()
+    dataset = torchaudio.datasets.SPEECHCOMMANDS(root=os.path.dirname(os.path.dirname(path_settings.get_dir_to_upload_from())), url = url, download=True)
+    print('downloaded dataset')
+    settings = load_settings()
+    print(settings)
+    # melspec_setings or mfcc_setings
+    key = sys.argv[3] if len(sys.argv) > 3 else "melspec_settings"
+
     
-    settings_melspec["type"] = "melspec"
-    # pyrefly: ignore [unsupported-operation]
-    settings_melspec["duration"] = 1
-    # pyrefly: ignore [unsupported-operation]
-    settings_melspec["log_flag"] = True
-    # pyrefly: ignore [unsupported-operation]
-    settings_melspec["sample_rate"] = 16000
-    # pyrefly: ignore [unsupported-operation]
-    settings_melspec["n_mels"] = 128
-    # pyrefly: ignore [unsupported-operation]
-    settings_melspec["n_fft"] = 1024
-    # pyrefly: ignore [unsupported-operation]
-    settings_melspec["hop_length"] = 128
-
-    settings_mfcc = {}
-
-    settings_mfcc["type"] = "mfcc"
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["log_flag"] = False
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["duration"] = 1
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["sample_rate"] = 16000
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["n_mels"] = 80
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["hop_length"] = 160
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["n_fft"] = 400
-    # pyrefly: ignore [unsupported-operation]
-    settings_mfcc["n_mfcc"] = 20
-
-    path_settings = TrainSettings()
-    
-    transform_func, settings = get_melspec_transform_func(settings_melspec)
+    transform_func, settings = get_transform_func(settings[key])
     avg, std = transform_wavs_to_tensors(path_settings, transform_func, settings)
 
     # transform_func, settings = get_melspec_transform_func(settings_mfcc)
     # avg, std = transform_wavs_to_tensors(path_settings, transform_func, settings)
-    
 
     print(avg, std)
