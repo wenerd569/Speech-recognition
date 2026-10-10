@@ -3,8 +3,7 @@ import torch
 from common.settings import TrainSettings
 
 
-def metrics_and_loss(model, dataloader, loss, device, train_settings: TrainSettings):
-    NUM_CLASSES = train_settings.get_num_classes
+def metrics_and_loss(model, dataloader, loss, device, NUM_CLASSES: TrainSettings):
 
     with torch.no_grad():
         was_training = model.training

@@ -3,8 +3,8 @@
     "base_settings": {
         "batch_size": 256,
         "epoch_count": 60,
-        "model_saving_path": "models/mfcc.pt",
-        "place_to_store_dataset": "ram",
+        "model_saving_path": "models/model.pt",
+        "place_to_store_dataset": "vram",
 
         "dir_to_upload_from": "data/speech_commands_v0.02",
         "dir_to_save_to": "data/data_proccessed",
