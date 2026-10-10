@@ -56,4 +56,4 @@ if __name__ == "__main__":
     train_loader = get_loader("df_train.csv", device, train_settings)
     validation_loader = get_loader("df_validation.csv", device, train_settings)
 
-    train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=2, save_path=train_settings.get_model_saving_path(), load_path=None)
+    train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=10, save_path=train_settings.get_model_saving_path(), load_path=None)
