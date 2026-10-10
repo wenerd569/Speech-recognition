@@ -6,6 +6,7 @@ import pandas as pd
 import soundfile as sf
 import torch
 import torchaudio.transforms as T
+import torchaudio
 
 from common.settings import TrainSettings
 
@@ -134,6 +135,8 @@ def load_settings(path=os.path.join(os.path.dirname(os.path.dirname(os.path.absp
 if __name__ == "__main__":
 
     path_settings = TrainSettings()
+    dataset = torchaudio.datasets.SPEECHCOMMANDS(root=os.path.dirname(os.path.dirname(path_settings.get_dir_to_upload_from())), url = "speech_commands_v0.01", download=True)
+    print('downloaded dataset')
     settings = load_settings()
     print(settings)
     # melspec_setings or mfcc_setings

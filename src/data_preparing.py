@@ -98,7 +98,7 @@ def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
 
 
 DIR_CURRENT = os.path.dirname(os.path.abspath(__file__))
-DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/speech_commands_v0.01")
+DIR_TO_UPLOAD_FROM = os.path.join(os.path.dirname(DIR_CURRENT), "data/SpeechCommands/speech_commands_v0.01")
 DIR_TO_SAVE_TO = os.path.join(os.path.dirname(DIR_CURRENT), "data/data_proccessed")
 
 if __name__ == "__main__":

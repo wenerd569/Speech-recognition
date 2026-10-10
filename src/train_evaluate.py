@@ -21,7 +21,7 @@ def evaluate(model, dataloader, num_classes, loss, device):
         # rec = Recall(task="multiclass", num_classes=num_classes, average="macro").to(device)
 
         # pyrefly: ignore [missing-argument]
-        return metrics_and_loss(model, dataloader, loss, device)
+        return metrics_and_loss(model, dataloader, loss, device, num_classes)
 
 def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path):
     dir = os.path.dirname(save_path)

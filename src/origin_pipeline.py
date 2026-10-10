@@ -18,17 +18,6 @@ from train_evaluate import step_decay, train
 
 if __name__ == "__main__":
 
-    
-
-
-
-
-
-
-
-
-
-
     if len(sys.argv) != 2:
         raise Exception("1 аргумент - путь до файла настроек")
     
