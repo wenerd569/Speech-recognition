@@ -18,7 +18,7 @@ def evaluate(model, dataloader, num_classes, loss, device):
         # pyrefly: ignore [missing-argument]
         return metrics_and_loss(model, dataloader, loss, device, num_classes)
 
-def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path):
+def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, best_val_acc, save_path):
     dir = os.path.dirname(save_path)
     os.makedirs(dir, exist_ok=True)
 
@@ -29,6 +29,7 @@ def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, 
         "scheduler_state_dict": scheduler.state_dict(),
         "best_metrics": best_metrics,
         "best_val_loss": best_val_loss,
+        "best_val_acc": best_val_acc,
     }, save_path)
 
     print(f"saved model to: {save_path}")
@@ -46,12 +47,12 @@ def load_model(model, optimizer, scheduler, load_path, device):
     start_epoch = dct["epoch"]
     best_val_loss = dct["best_val_loss"]
     best_metrics = dct["best_metrics"]
-    best_val_acc = dct["best_val_acc"]
+    best_val_acc = dct.get("best_val_acc", float("nan"))  # в старых чекпоинтах его нет
 
     print(f"model path: {load_path}")
     print(f"epoch: {start_epoch}, best_val_loss = {best_val_loss:.6f}, best_val_acc = {best_val_acc:.6f}")
 
-    return start_epoch, best_val_loss, best_metrics
+    return start_epoch, best_val_loss, best_val_acc, best_metrics
 
 def step_decay_mult(epoch):
     drop = 0.4
@@ -68,7 +69,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
     start_epoch = 0
 
     if load_path is not None:
-        start_epoch, best_val_loss, best_metrics = load_model(model, optimizer, scheduler, load_path, device)
+        start_epoch, best_val_loss, best_val_acc, best_metrics = load_model(model, optimizer, scheduler, load_path, device)
 
     epoch = start_epoch
 
@@ -135,7 +136,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
             epochs_without_improvement+=1
 
         print('saving')
-        save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_to)
+        save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, best_val_acc, save_to)
         epoch+=1
 
         if epochs_without_improvement >= epochs_to_wait:

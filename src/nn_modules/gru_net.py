@@ -18,4 +18,5 @@ class GruNet(nn.Module):
         # B x F x T
         x = x.permute(0, 2, 1)   # B x T x F
         x, _ = self.features(x)  # B x T x 128
+        x = x.permute(0, 2, 1)   # B x 128 x T
         return x
