@@ -38,8 +38,10 @@ def load_model(model, optimizer, scheduler, load_path, device):
     dct = torch.load(load_path, map_location=device)
 
     model.load_state_dict(dct["model_state_dict"])
-    optimizer.load_state_dict(dct["optimizer_state_dict"])
-    scheduler.load_state_dict(dct["scheduler_state_dict"])
+    if optimizer is not None:
+        optimizer.load_state_dict(dct["optimizer_state_dict"])
+    if scheduler is not None:
+        scheduler.load_state_dict(dct["scheduler_state_dict"])
 
     start_epoch = dct["epoch"]
     best_val_loss = dct["best_val_loss"]
