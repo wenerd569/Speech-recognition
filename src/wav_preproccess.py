@@ -43,10 +43,10 @@ def make_lfcc(settings):
         sample_rate=settings["sample_rate"],
         n_lfcc=settings["n_lfcc"],
         log_lf=settings["log_flag"],
+        n_filter=settings["n_filter"],
         speckwargs={
             "n_fft": settings["n_fft"],
             "hop_length": settings["hop_length"],
-            "n_filter": settings["n_filter"],
         },
     )
 
