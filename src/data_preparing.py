@@ -43,6 +43,8 @@ class MelSpecDataset(Dataset):
         self.augment = augment
         self.augment_prob = augment_prob
 
+        self.AVG = AVG
+        self.STD = STD
         # pyrefly: ignore [unsupported-operation]
         self.labels = torch.tensor([self.label_to_index[l] for l in df["label"]])
         self.paths = self.df["path"].tolist()
@@ -88,7 +90,7 @@ class MelSpecDataset(Dataset):
             snr = random.uniform(10,20)
             mlspc = add_noise_to_db(mlspc, snr_db=snr)
 
-        mlspc = (mlspc - AVG)/STD
+        mlspc = (mlspc - self.AVG)/self.STD
         return mlspc,self.labels[index]
 
 
