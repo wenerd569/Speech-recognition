@@ -49,9 +49,10 @@ def load_model(model, optimizer, scheduler, load_path, device):
     start_epoch = dct["epoch"]
     best_val_loss = dct["best_val_loss"]
     best_metrics = dct["best_metrics"]
+    best_val_acc = dct["best_val_acc"]
 
     print(f"model path: {load_path}")
-    print(f"epoch: {start_epoch}, best_val_loss = {best_val_loss:.6f}")
+    print(f"epoch: {start_epoch}, best_val_loss = {best_val_loss:.6f}, best_val_acc = {best_val_acc:.6f}")
 
     return start_epoch, best_val_loss, best_metrics
 
@@ -82,6 +83,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
     while(epoch<epochs):
         model.train()
         print(f"Epoch {epoch}")
+        save_to = os.path.join(save_path, f'model_{epoch}.pt')
 
         train_loss = 0.0
         total = 0
@@ -131,12 +133,12 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
             best_val_acc = val_acc
             best_metrics = metrics_loss
             best_val_loss = val_loss
-            print('model is better, saving')
-            save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
             epochs_without_improvement = 0
         else:
             epochs_without_improvement+=1
 
+        print('saving')
+        save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_to)
         epoch+=1
 
         if epochs_without_improvement >= epochs_to_wait:
@@ -153,7 +155,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
 
     writer.close()
 
-    print(f'finished, best_val_loss: {best_val_loss}')
+    print(f'finished, best_val_loss: {best_val_loss}, best_val_acc: {best_val_acc}')
     print(f'best metrics: {best_metrics}')
 
 

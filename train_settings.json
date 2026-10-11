@@ -3,7 +3,7 @@
     "base_settings": {
         "batch_size": 64,
         "epoch_count": 40,
-        "model_saving_path": "models/test.pt",
+        "model_saving_path": "models",
         "place_to_store_dataset": "storage",
 
         "dir_to_upload_from": "data/SpeechCommands/speech_commands_v0.02",
