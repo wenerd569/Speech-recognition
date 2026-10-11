@@ -5,9 +5,26 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from common.settings import TrainSettings
+import math
+import random
 
-AVG = 9.8932
-STD = 210.8802
+AVG = -25.3098
+STD = 22.5641
+
+def add_noise_to_db(melspec_db, snr_db=15.0, eps=1e-10):
+
+    P = 10.0 ** (melspec_db / 10.0)
+    P_signal = torch.mean(P)
+    if P_signal < 1e-6:
+        return melspec_db
+
+    P_noise = P_signal / (10.0 ** (snr_db / 10.0))
+    noise = torch.randn_like(P) * torch.sqrt(P_noise)
+
+    P_noisy = torch.clamp(P + noise, min=eps)
+    melspec_db_noisy = 10.0 * torch.log10(P_noisy)
+
+    return melspec_db_noisy
 
 class MelSpecDataset(Dataset): 
     #датасет можно хранить на:
@@ -17,16 +34,18 @@ class MelSpecDataset(Dataset):
     # ! если вы юзаете cpu или mps, то ram и vram - суть одно и то же. однако мне показалось, что при использовани mps+ram лосс на валидации скачет сильнее, чем на mps+vram. в любом случае юзайте второй вариант если ноут позволяет.
     # ! если такая же проблема будет в колабе с cuda+ram - надо скорее всего фиксить. ну надеюсь мы арендуем карточку с достаточным vram и забьём на это
     # места для хранение - "storage", "ram", "vram"
-    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage'):
+    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage', augment=True, augment_prob = 0.5):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
         self.label_to_index = label_to_index or {
             label: index for index, label in enumerate(sorted(df["label"].drop_duplicates()))
         }
+        self.augment = augment
+        self.augment_prob = augment_prob
 
 
         # pyrefly: ignore [unsupported-operation]
-        self.labels = torch.tensor([label_to_index[l] for l in df["label"]])
+        self.labels = torch.tensor([self.label_to_index[l] for l in df["label"]])
         self.paths = self.df["path"].tolist()
         self.place = place_to_store_dataset
         map_location = device if self.place == 'vram' else 'cpu'
@@ -63,10 +82,16 @@ class MelSpecDataset(Dataset):
     def __getitem__(self, index):
         if self.place != "storage":
             # pyrefly: ignore [unsupported-operation]
-            return (self.data[index] - AVG)/STD, self.labels[index]
+            mlspc = self.data[index]
         else:
-            melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]),map_location="cpu")
-            return (melspec - AVG)/STD, self.labels[index]
+            mlspc = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]),map_location="cpu")
+        if self.augment and torch.rand(1).item() < self.augment_prob:
+            snr = random.uniform(10,20)
+            mlspc = add_noise_to_db(mlspc, snr_db=snr)
+
+        mlspc = (mlspc - AVG)/STD
+        return mlspc,self.labels[index]
+        
 
 
 def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):
