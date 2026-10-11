@@ -10,12 +10,22 @@
     },
     "mfcc_settings": {
         "type": "mfcc",
-        "log_flag": 0,
+        "log_flag": 1,
         "duration": 1,
         "sample_rate": 16000,
         "n_mels": 80,
-        "hop_length": 160,
-        "n_fft": 400,
+        "hop_length": 128,
+        "n_fft": 1024,
         "n_mfcc": 20
+    },
+    "lfcc_settings": {
+        "type": "lfcc",
+        "log_flag": 1,
+        "duration": 1,
+        "sample_rate": 16000,
+        "n_filter": 80,
+        "hop_length": 128,
+        "n_fft": 1024,
+        "n_lfcc": 20
     }
 }

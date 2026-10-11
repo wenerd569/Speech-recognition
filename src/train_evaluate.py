@@ -15,11 +15,6 @@ def evaluate(model, dataloader, num_classes, loss, device):
         model.eval()
         model.to(device)
 
-        # acc = Accuracy(task="multiclass", num_classes=num_classes).to(device)
-        # f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro").to(device)
-        # prec = Precision(task="multiclass", num_classes=num_classes, average="macro").to(device)
-        # rec = Recall(task="multiclass", num_classes=num_classes, average="macro").to(device)
-
         # pyrefly: ignore [missing-argument]
         return metrics_and_loss(model, dataloader, loss, device, num_classes)
 
