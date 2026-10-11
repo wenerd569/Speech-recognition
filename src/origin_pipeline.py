@@ -1,6 +1,7 @@
 import sys
 import os
 import torch
+from torchinfo import summary
 
 from torch import nn
 from torch.optim import Adam
@@ -21,8 +22,8 @@ from train_evaluate import step_decay_mult, train
 
 if __name__ == "__main__":
 
-    #if len(sys.argv) != 2:
-    #    raise Exception("1 аргумент - путь до файла настроек")
+    # if len(sys.argv) != 2:
+        # raise Exception("1 аргумент - путь до файла настроек")
 
     device = get_device()
     print("device: ", device)
@@ -50,6 +51,7 @@ if __name__ == "__main__":
     parts = [nets[x]() for x in parts_names]
 
     net = UnionNet(parts)
+    summary(net, input_size=(train_settings.get_batch_size(), 1, n_mels, target_T))
 
     optimizer = Adam(net.parameters(), lr=0.001)
     loss = nn.CrossEntropyLoss()
@@ -58,5 +60,4 @@ if __name__ == "__main__":
 
     train_loader = get_loader("df_train.csv", device, train_settings)
     validation_loader = get_loader("df_validation.csv", device, train_settings)
-
     train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=10, save_path=train_settings.get_model_saving_path(), load_path=None)
