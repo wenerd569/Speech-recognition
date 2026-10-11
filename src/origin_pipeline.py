@@ -1,5 +1,6 @@
 import sys
 import os
+import torch
 
 from torch import nn
 from torch.optim import Adam
@@ -14,6 +15,7 @@ from nn_modules.mean_net import MeanNet
 from nn_modules.gru_net import GruNet
 from nn_modules.transformer_net import TransformerNet
 from nn_modules.ast import AudioTransformer
+from nn_modules.ast2 import ASTNet
 
 from nn_modules.union_net import UnionNet
 from train_evaluate import step_decay_mult, train
@@ -42,7 +44,7 @@ if __name__ == "__main__":
         "att128": lambda: AttentionCompleteNet(output_features=num_classes),
         "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
         "transformer": lambda: TransformerNet(input_features=n_mels),
-        "ast": lambda: AudioTransformer(num_classes=num_classes, input_f=n_mels, input_t=target_T),
+        "ast": lambda: ASTNet(n_mels=n_mels, target_T=target_T, label_dim=num_classes, imagenet_pretrain=True)
     }
 
     parts_names = train_settings.get_parts()

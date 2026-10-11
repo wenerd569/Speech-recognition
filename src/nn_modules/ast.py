@@ -3,6 +3,63 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchgen.api.functionalization import base_binding
+
+
+class ASTEmbedding(nn.Module):
+    def __init__(
+        self,
+        n_mels,
+        base_time,
+        d_model=256,
+        patch_size=16,
+        stride=10,
+    ):
+        super().__init__()
+
+        self.patch_embed = nn.Conv2d(
+            in_channels=1,
+            out_channels=d_model,
+            kernel_size=patch_size,
+            stride=stride,
+        )
+
+        # Размер сетки патчей для базового размера спектрограммы
+        base_f = (n_mels - patch_size) // stride + 1
+        base_t = (base_time - patch_size) // stride + 1
+
+        # Обучаемые позиционные эмбеддинги
+        self.pos_embed = nn.Parameter(
+            torch.randn(1, d_model, base_f, base_t) * 0.02
+        )
+
+    def forward(self, x):
+        # x: (B, F, T), где F — число мел-частот
+
+        x = self.patch_embed(x.unsqueeze(1))
+        # x: (B, d_model, grid_f, grid_t)
+
+        # Подгоняем позиционные эмбеддинги к текущей сетке патчей
+        pos = F.interpolate(
+            self.pos_embed,
+            size=x.shape[2:],
+            mode="bicubic",
+            align_corners=False,
+        )
+
+        x = x + pos
+
+        # Превращаем 2D-сетку патчей в последовательность
+        x = x.flatten(2).transpose(1, 2)
+        # (B, grid_f * grid_t, d_model)
+
+        return x
+
+
+
 class AudioTransformer(nn.Module):
     def __init__(
         self,
@@ -17,12 +74,7 @@ class AudioTransformer(nn.Module):
     ):
         super().__init__()
 
-        self.patch_embed = nn.Conv2d(
-            in_channels=1,
-            out_channels=d_model,
-            kernel_size=patch_size,
-            stride=stride,
-        )
+        self.patch_embed = ASTEmbedding(base_time=input_t, n_mels=input_f)
 
         # Размер сетки патчей для ожидаемого размера входа
         grid_f = (input_f - patch_size) // stride + 1
