@@ -1,5 +1,7 @@
+from os import read
 import json
 import os
+import math
 
 import pandas as pd
 import torch
@@ -13,9 +15,18 @@ def get_loader(df_csv_name, device, train_settings, augment=False):
     label_to_index = train_settings.get_labels_to_index()
     batch_size = train_settings.get_batch_size()
     place = train_settings.get_place_to_store_dataset()
+    
+    preprocess_settings_path = os.path.join(train_settings.get_dir_to_save_to(), "preprocess_settings.json")
+    with open(preprocess_settings_path, "r") as f:
+        preprocess_settings = json.load(f)
+    avg = preprocess_settings["avg"]
+    std = math.sqrt(preprocess_settings["avg"])
+
+
+
 
     df_train = pd.read_csv(os.path.join(dir_to_save_to, df_csv_name))
-    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place, augment=augment)
+    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place, augment=augment, AVG=avg, STD=std)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return train_loader
 
