@@ -6,8 +6,21 @@ import torch
 from torch.utils.data import Dataset
 from common.settings import TrainSettings
 
-AVG = 9.8932
-STD = 210.8802
+AVG = -23.7493
+STD = 19.6323
+
+def add_noise_to_db(melspec_db, noise_db, snr_db):
+    noise_db = noise_db.to(melspec_db)
+
+    signal = 10.0 ** (melspec_db / 10.0)
+    noise = 10.0 ** (noise_db / 10.0)
+
+    scale = signal.mean() / noise.mean().clamp_min(1e-10)
+    scale = scale * 10.0 ** (-snr_db / 10.0)
+
+    result = 10.0 * torch.log10((signal + scale * noise).clamp_min(1e-10))
+    return result.clamp_min(result.amax() - 80)
+
 
 class MelSpecDataset(Dataset): 
     #датасет можно хранить на:
@@ -17,7 +30,11 @@ class MelSpecDataset(Dataset):
     # ! если вы юзаете cpu или mps, то ram и vram - суть одно и то же. однако мне показалось, что при использовани mps+ram лосс на валидации скачет сильнее, чем на mps+vram. в любом случае юзайте второй вариант если ноут позволяет.
     # ! если такая же проблема будет в колабе с cuda+ram - надо скорее всего фиксить. ну надеюсь мы арендуем карточку с достаточным vram и забьём на это
     # места для хранение - "storage", "ram", "vram"
-    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage'):
+    def __init__(
+        self, df, MELSPEC_DATA_DIR, device,
+        label_to_index=None, place_to_store_dataset = 'storage',
+        augment=False, augment_prob=0.5, noise_snr=15.0, noise_type="all"
+    ):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
         self.label_to_index = label_to_index or {
@@ -30,6 +47,29 @@ class MelSpecDataset(Dataset):
         self.paths = self.df["path"].tolist()
         self.place = place_to_store_dataset
         map_location = device if self.place == 'vram' else 'cpu'
+
+        self.augment = augment
+        self.augment_prob = augment_prob
+        self.noise_snr = noise_snr
+
+        if noise_type not in ("all", "white", "background"):
+            raise ValueError("noise_type must be all, white or background")
+
+        self.noises = []
+        if self.augment and self.augment_prob > 0:
+            noise_dir = os.path.join(MELSPEC_DATA_DIR, "noise_bank")
+
+            for name in sorted(os.listdir(noise_dir)):
+                if not name.endswith(".pt"):
+                    continue
+                if noise_type == "white" and not name.startswith("white_noise_"):
+                    continue
+                if noise_type == "background" and name.startswith("white_noise_"):
+                    continue
+
+                self.noises.append(
+                    torch.load(os.path.join(noise_dir, name), map_location="cpu")
+                )
         
         if self.place == 'ram':
             temp = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[0]), map_location=map_location)
@@ -62,11 +102,24 @@ class MelSpecDataset(Dataset):
 
     def __getitem__(self, index):
         if self.place != "storage":
-            # pyrefly: ignore [unsupported-operation]
-            return (self.data[index] - AVG)/STD, self.labels[index]
+            melspec = self.data[index]
         else:
-            melspec = torch.load(os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]),map_location="cpu")
-            return (melspec - AVG)/STD, self.labels[index]
+            melspec = torch.load(
+                os.path.join(self.MELSPEC_DATA_DIR, self.paths[index]),
+                map_location="cpu",
+            )
+
+        if (
+            self.augment
+            and not self.paths[index].startswith("_background_noise_/")
+            and torch.rand(()).item() < self.augment_prob
+        ):
+            noise_index = torch.randint(len(self.noises), ()).item()
+            melspec = add_noise_to_db(
+                melspec, self.noises[noise_index], self.noise_snr
+            )
+
+        return (melspec - AVG) / STD, self.labels[index]
 
 
 def init_datasets(DATASET_DIR, MELSPEC_DATA_DIR):

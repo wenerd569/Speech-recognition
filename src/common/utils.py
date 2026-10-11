@@ -15,7 +15,17 @@ def get_loader(df_csv_name, device, train_settings):
     place = train_settings.get_place_to_store_dataset()
 
     df_train = pd.read_csv(os.path.join(dir_to_save_to, df_csv_name))
-    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place)
+
+    noise = train_settings.get_noise_settings()
+    snr_levels = {"weak": 30, "light": 20, "medium": 10, "high": 0}
+    dataset = MelSpecDataset(
+        df_train, dir_to_save_to, device, label_to_index, place,
+        augment=(df_csv_name == "df_train.csv"),
+        augment_prob=float(noise.get("probability", 0.0)),
+        noise_snr=snr_levels[noise.get("level", "medium")],
+        noise_type=noise.get("type", "all"),
+    )
+
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return train_loader
 

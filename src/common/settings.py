@@ -38,6 +38,7 @@ class TrainSettings:
             config = json.load(settings_file)
 
         base_settings = config["base_settings"]
+        self._noise_settings = config.get("noise", {})
         
         self._batch_size = int(base_settings["batch_size"])
         self._model_saving_path = self._resolve_path(
@@ -102,3 +103,6 @@ class TrainSettings:
 
     def get_dataset_url(self):
         return self._dataset_url
+
+    def get_noise_settings(self):
+        return self._noise_settings

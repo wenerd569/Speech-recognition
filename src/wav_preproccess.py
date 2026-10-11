@@ -132,6 +132,48 @@ def load_settings(path=os.path.join(os.path.dirname(os.path.dirname(os.path.absp
         return json.load(f)
 
 
+# подготовка шумов в отдельный директорий
+def prepare_noise_mels(input_dir, output_dir, settings):
+    transform_func, settings = get_transform_func(settings)
+    sample_rate = settings["sample_rate"]
+    chunk_size = int(sample_rate * settings["duration"])
+    if chunk_size <= 0:
+        return
+
+    os.makedirs(output_dir, exist_ok=True)
+    count = 0
+
+    for name in sorted(os.listdir(input_dir)):
+        if not name.lower().endswith(".wav"):
+            continue
+
+        data, sr = sf.read(
+            os.path.join(input_dir, name),
+            dtype="float32",
+            always_2d=True,
+        )
+        waveform = torch.from_numpy(data).mean(dim=1).unsqueeze(0)
+
+        if sr != sample_rate:
+            waveform = torchaudio.functional.resample(
+                waveform, sr, sample_rate
+            )
+
+        for i in range(waveform.shape[-1] // chunk_size):
+            start = i * chunk_size
+            clip = waveform[:, start:start + chunk_size]
+
+            mel = transform_func(clip)
+            if settings["log_flag"]:
+                mel = T.AmplitudeToDB(stype="power", top_db=80)(mel)
+
+            filename = f"{os.path.splitext(name)[0]}_{i:04d}.pt"
+            torch.save(mel, os.path.join(output_dir, filename))
+            count += 1
+
+    return count
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) > 1:
@@ -150,6 +192,16 @@ if __name__ == "__main__":
     
     transform_func, settings = get_transform_func(settings[key])
     avg, std = transform_wavs_to_tensors(path_settings, transform_func, settings)
+
+    noise_count = prepare_noise_mels(
+        input_dir=os.path.join(
+            path_settings.get_dir_to_upload_from(), "_background_noise_"
+        ),
+        output_dir=os.path.join(
+            path_settings.get_dir_to_save_to(), "noise_bank"
+        ),
+        settings=settings,
+    )
 
     # transform_func, settings = get_melspec_transform_func(settings_mfcc)
     # avg, std = transform_wavs_to_tensors(path_settings, transform_func, settings)
