@@ -23,7 +23,7 @@
         "log_flag": 1,
         "duration": 1,
         "sample_rate": 16000,
-        "n_mels": 80,
+        "n_filter": 80,
         "hop_length": 128,
         "n_fft": 1024,
         "n_lfcc": 20
