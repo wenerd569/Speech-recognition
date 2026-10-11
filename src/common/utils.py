@@ -20,7 +20,7 @@ def get_loader(df_csv_name, device, train_settings, augment=False):
     with open(preprocess_settings_path, "r") as f:
         preprocess_settings = json.load(f)
     avg = preprocess_settings["avg"]
-    std = math.sqrt(preprocess_settings["avg"])
+    std = math.sqrt(preprocess_settings["var"])
 
     df_train = pd.read_csv(os.path.join(dir_to_save_to, df_csv_name))
     dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place, augment=augment, AVG=avg, STD=std)
