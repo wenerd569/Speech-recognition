@@ -8,14 +8,14 @@ from torch.utils.data import DataLoader
 from data_preparing import MelSpecDataset
 
 
-def get_loader(df_csv_name, device, train_settings):
+def get_loader(df_csv_name, device, train_settings, augment=False):
     dir_to_save_to = train_settings.get_dir_to_save_to()
     label_to_index = train_settings.get_labels_to_index()
     batch_size = train_settings.get_batch_size()
     place = train_settings.get_place_to_store_dataset()
 
     df_train = pd.read_csv(os.path.join(dir_to_save_to, df_csv_name))
-    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place)
+    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place, augment=augment)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return train_loader
 
