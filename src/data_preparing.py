@@ -38,7 +38,7 @@ class MelSpecDataset(Dataset):
     # ! если вы юзаете cpu или mps, то ram и vram - суть одно и то же. однако мне показалось, что при использовани mps+ram лосс на валидации скачет сильнее, чем на mps+vram. в любом случае юзайте второй вариант если ноут позволяет.
     # ! если такая же проблема будет в колабе с cuda+ram - надо скорее всего фиксить. ну надеюсь мы арендуем карточку с достаточным vram и забьём на это
     # места для хранение - "storage", "ram", "vram"
-    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage', augment=True, augment_prob = 0.5, AVG: float, STD: float):
+    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage', AVG: float, STD: float, augment=True, augment_prob = 0.5):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
         self.label_to_index = label_to_index or {

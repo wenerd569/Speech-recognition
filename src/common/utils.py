@@ -22,11 +22,8 @@ def get_loader(df_csv_name, device, train_settings, augment=False):
     avg = preprocess_settings["avg"]
     std = math.sqrt(preprocess_settings["avg"])
 
-
-
-
     df_train = pd.read_csv(os.path.join(dir_to_save_to, df_csv_name))
-    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place, augment=augment, AVG=avg, STD=std)
+    dataset = MelSpecDataset(df_train, dir_to_save_to, device, label_to_index, place, AVG=avg, STD=std, augment=augment)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return train_loader
 
