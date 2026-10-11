@@ -71,9 +71,10 @@ class ASTNet(nn.Module):
         self.mlp_head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, label_dim))
 
     def forward(self, x):
-        """x: (B, time, freq) лог-мел fbank, нормированный."""
-        x = x.unsqueeze(1).transpose(2, 3)                 # (B,1,freq,time)
-        x = self.proj(x).flatten(2).transpose(1, 2)        # (B, N, 768)
+        """x: (B, 1, freq, time) или (B, freq, time)."""
+        if x.dim() == 3:              # (B, freq, time)
+            x = x.unsqueeze(1)        # -> (B, 1, freq, time)
+        x = self.proj(x).flatten(2).transpose(1, 2)   # (B, N, 768)
         B = x.shape[0]
         x = torch.cat(
             [self.cls_token.expand(B, -1, -1), self.dist_token.expand(B, -1, -1), x], dim=1
