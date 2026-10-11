@@ -1,137 +1,86 @@
+"""
+AST: Audio Spectrogram Transformer (arXiv:2104.01778)
+Инициализация весами DeiT-base distilled 384 (ImageNet) через timm.
+
+pip install torch torchaudio timm
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchaudio
+import timm
 
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torchgen.api.functionalization import base_binding
-
-
-class ASTEmbedding(nn.Module):
+class ASTNet(nn.Module):
     def __init__(
         self,
         n_mels,
-        base_time,
-        d_model=256,
-        patch_size=16,
-        stride=10,
+        target_T,
+        label_dim=527,
+        fstride=10,
+        tstride=10,
+        imagenet_pretrain=True,
+        model_name="deit_base_distilled_patch16_384",
     ):
         super().__init__()
+        v = timm.create_model(model_name, pretrained=imagenet_pretrain)
+        dim = v.embed_dim                                  # 768
+        orig_h, orig_w = v.patch_embed.grid_size           # 24, 24
 
-        self.patch_embed = nn.Conv2d(
-            in_channels=1,
-            out_channels=d_model,
-            kernel_size=patch_size,
-            stride=stride,
-        )
+        # число патчей по частоте / времени при перекрытии
+        f_dim = (n_mels - 16) // fstride + 1
+        t_dim = (target_T - 16) // tstride + 1
 
-        # Размер сетки патчей для базового размера спектрограммы
-        base_f = (n_mels - patch_size) // stride + 1
-        base_t = (base_time - patch_size) // stride + 1
+        # --- 1) patch embedding: 3 канала -> 1 канал, новый stride ---
+        proj = nn.Conv2d(1, dim, kernel_size=16, stride=(fstride, tstride))
+        if imagenet_pretrain:
+            old = v.patch_embed.proj
+            proj.weight = nn.Parameter(old.weight.detach().sum(dim=1, keepdim=True))
+            proj.bias = nn.Parameter(old.bias.detach().clone())
+        self.proj = proj
 
-        # Обучаемые позиционные эмбеддинги
-        self.pos_embed = nn.Parameter(
-            torch.randn(1, d_model, base_f, base_t) * 0.02
-        )
-
-    def forward(self, x):
-        # x: (B, F, T), где F — число мел-частот
-
-        x = self.patch_embed(x.unsqueeze(1))
-        # x: (B, d_model, grid_f, grid_t)
-
-        # Подгоняем позиционные эмбеддинги к текущей сетке патчей
-        pos = F.interpolate(
-            self.pos_embed,
-            size=x.shape[2:],
-            mode="bicubic",
-            align_corners=False,
-        )
-
-        x = x + pos
-
-        # Превращаем 2D-сетку патчей в последовательность
-        x = x.flatten(2).transpose(1, 2)
-        # (B, grid_f * grid_t, d_model)
-
-        return x
-
-
-
-class AudioTransformer(nn.Module):
-    def __init__(
-        self,
-        num_classes: int,
-        input_f: int,
-        input_t: int,
-        d_model: int = 256,
-        num_heads: int = 4,
-        num_layers: int = 4,
-        patch_size: int = 16,
-        stride: int = 10,
-    ):
-        super().__init__()
-
-        self.patch_embed = ASTEmbedding(base_time=input_t, n_mels=input_f)
-
-        # Размер сетки патчей для ожидаемого размера входа
-        grid_f = (input_f - patch_size) // stride + 1
-        grid_t = (input_t - patch_size) // stride + 1
-
-        # Обучаемые двумерные позиционные эмбеддинги
-        self.pos_embed = nn.Parameter(
-            torch.zeros(1, d_model, grid_f, grid_t)
-        )
-        nn.init.trunc_normal_(self.pos_embed, std=0.02)
-
-        # Специальный токен для классификации
-        self.cls_token = nn.Parameter(
-            torch.zeros(1, 1, d_model)
-        )
-        nn.init.trunc_normal_(self.cls_token, std=0.02)
-
-        layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=num_heads,
-            dim_feedforward=4 * d_model,
-            batch_first=True,
-        )
-
-        self.encoder = nn.TransformerEncoder(
-            layer,
-            num_layers=num_layers,
-        )
-
-        self.classifier = nn.Linear(d_model, num_classes)
-
-    def forward(self, x):
-        x = self.patch_embed(x)
-        # B × D × grid_f × grid_t
-
-        if x.shape[2:] != self.pos_embed.shape[2:]:
-            pos = F.interpolate(
-                self.pos_embed,
-                size=x.shape[2:],
-                mode="bicubic",
-                align_corners=False,
-            )
+        # --- 2) positional embedding: обрезка по частоте, интерполяция по времени ---
+        pos = v.pos_embed.detach()                         # (1, 2+576, 768)
+        head_tokens, grid = pos[:, :2], pos[:, 2:]
+        grid = grid.reshape(1, orig_h, orig_w, dim).permute(0, 3, 1, 2)  # (1,768,24,24)
+        if imagenet_pretrain:
+            # время
+            if t_dim <= orig_w:
+                s = orig_w // 2 - t_dim // 2
+                grid = grid[:, :, :, s:s + t_dim]
+            else:
+                grid = F.interpolate(grid, size=(orig_h, t_dim), mode="bilinear", align_corners=False)
+            # частота
+            if f_dim <= orig_h:
+                s = orig_h // 2 - f_dim // 2
+                grid = grid[:, :, s:s + f_dim, :]
+            else:
+                grid = F.interpolate(grid, size=(f_dim, t_dim), mode="bilinear", align_corners=False)
+            grid = grid.reshape(1, dim, f_dim * t_dim).transpose(1, 2)
+            self.pos_embed = nn.Parameter(torch.cat([head_tokens, grid], dim=1))
         else:
-            pos = self.pos_embed
+            self.pos_embed = nn.Parameter(torch.zeros(1, 2 + f_dim * t_dim, dim))
+            nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
-        x = x + pos
+        # --- 3) остальное берём из DeiT как есть ---
+        self.cls_token = v.cls_token
+        self.dist_token = v.dist_token
+        self.blocks = v.blocks
+        self.norm = v.norm
 
-        x = x.flatten(2).transpose(1, 2)
-        # B × N × D
+        self.mlp_head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, label_dim))
 
-        cls = self.cls_token.expand(x.size(0), -1, -1)
-        x = torch.cat([cls, x], dim=1)
-        # B × (N + 1) × D
-
-        x = self.encoder(x)
-
-        # Берём выход специального CLS-токена
-        x = x[:, 0]
-
-        return self.classifier(x)
+    def forward(self, x):
+        """x: (B, 1, freq, time) или (B, freq, time)."""
+        if x.dim() == 3:              # (B, freq, time)
+            x = x.unsqueeze(1)        # -> (B, 1, freq, time)
+        x = self.proj(x).flatten(2).transpose(1, 2)   # (B, N, 768)
+        B = x.shape[0]
+        x = torch.cat(
+            [self.cls_token.expand(B, -1, -1), self.dist_token.expand(B, -1, -1), x], dim=1
+        )
+        x = x + self.pos_embed
+        x = self.blocks(x)
+        x = self.norm(x)
+        x = (x[:, 0] + x[:, 1]) / 2
+        return self.mlp_head(x)                            # логиты
