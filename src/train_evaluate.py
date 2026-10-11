@@ -143,7 +143,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
             if ask:
                 ans = input("should continue? yes or no ")
 
-                if (ans == "yes"):
+                if (ans.strip().lower() == "yes"):
                     epochs_without_improvement = 0
                     continue
                 else:
