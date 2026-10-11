@@ -10,7 +10,7 @@ import torchaudio
 
 from common.settings import TrainSettings
 
-# пик трансформера датасета
+# пик трансформера датасета 
 def make_melspec(settings):
     return T.MelSpectrogram(
         sample_rate=settings["sample_rate"],

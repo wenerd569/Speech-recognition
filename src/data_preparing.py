@@ -47,7 +47,10 @@ class MelSpecDataset(Dataset):
             N = len(self.paths)
             self.data = torch.empty((N,*shape), dtype = dtype).to(device)
             for i,p in enumerate(self.paths):
-                self.data[i] = torch.load(os.path.join(self.MELSPEC_DATA_DIR,p), map_location=map_location).to(device)
+                try:
+                    self.data[i] = torch.load(os.path.join(self.MELSPEC_DATA_DIR,p), map_location=map_location).to(device)
+                except FileNotFoundError:
+                    continue
         elif self.place == 'storage':
             self.data = None
         else:
