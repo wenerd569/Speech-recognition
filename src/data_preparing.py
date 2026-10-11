@@ -9,8 +9,11 @@ from common.settings import TrainSettings
 import math
 import random
 
+
+
+
 AVG = -25.3098
-STD = 22.5641
+STD = 22.2
 
 def add_noise_to_db(melspec_db, snr_db=15.0, eps=1e-10):
 
@@ -35,7 +38,7 @@ class MelSpecDataset(Dataset):
     # ! если вы юзаете cpu или mps, то ram и vram - суть одно и то же. однако мне показалось, что при использовани mps+ram лосс на валидации скачет сильнее, чем на mps+vram. в любом случае юзайте второй вариант если ноут позволяет.
     # ! если такая же проблема будет в колабе с cuda+ram - надо скорее всего фиксить. ну надеюсь мы арендуем карточку с достаточным vram и забьём на это
     # места для хранение - "storage", "ram", "vram"
-    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage', augment=True, augment_prob = 0.5):
+    def __init__(self, df, MELSPEC_DATA_DIR, device, label_to_index=None, place_to_store_dataset = 'storage', augment=True, augment_prob = 0.5, AVG: float, STD: float):
         self.MELSPEC_DATA_DIR = MELSPEC_DATA_DIR
         self.df = df
         self.label_to_index = label_to_index or {
