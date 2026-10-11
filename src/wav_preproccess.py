@@ -100,7 +100,7 @@ def transform_wavs_to_tensors(path_settings: TrainSettings, transform_func, sett
             wav_melspec = transform_func(wav_file)
 
             if logFlag:
-                wav_melspec = T.AmplitudeToDB(stype='power', top_db=80)(wav_melspec)
+                wav_melspec = T.AmplitudeToDB(stype='power', top_db=None)(wav_melspec)
 
             total += torch.sum(wav_melspec.flatten())
             total_sq += torch.sum(wav_melspec.flatten() ** 2)
