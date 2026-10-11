@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "lstm64": lambda: LSTMNet(input_features=n_mels),
         "gru": lambda: GruNet(input_features=n_mels),
         "att128": lambda: AttentionCompleteNet(output_features=num_classes),
-        "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
+        "meannet": lambda: MeanNet(input_features=128, output_features=num_classes),
         "transformer": lambda: TransformerNet(input_features=n_mels),
         "ast": lambda: AudioTransformer(num_classes=num_classes, input_f=n_mels, input_t=target_T),
         "dropout": lambda: nn.Dropout(0.3)
