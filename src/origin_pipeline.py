@@ -14,7 +14,6 @@ from nn_modules.lstm_net import LSTMNet
 from nn_modules.mean_net import MeanNet
 from nn_modules.gru_net import GruNet
 from nn_modules.transformer_net import TransformerNet
-from nn_modules.ast import AudioTransformer
 from nn_modules.ast import ASTNet
 
 from nn_modules.union_net import UnionNet
