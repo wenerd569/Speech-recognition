@@ -62,6 +62,7 @@ def test_model(model_path, model_setting, device):
         "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
         "transformer": lambda: TransformerNet(input_features=n_mels),
         "ast": lambda: AudioTransformer(num_classes=num_classes, input_f=n_mels, input_t=target_T),
+        "dropout": lambda: nn.Dropout(0.3)
     }
     model = UnionNet([nets[x]() for x in model_setting.get_parts()])
 
