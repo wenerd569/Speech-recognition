@@ -16,6 +16,7 @@ from nn_modules.mean_net import MeanNet
 from nn_modules.gru_net import GruNet
 from nn_modules.transformer_net import TransformerNet
 from nn_modules.ast import ASTNet
+from nn_modules.ast_2 import AudioTransformer
 
 from nn_modules.union_net import UnionNet
 from train_evaluate import step_decay_mult, train
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
         "transformer": lambda: TransformerNet(input_features=n_mels),
         "ast": lambda: ASTNet(n_mels=n_mels, target_T=target_T, label_dim=num_classes, imagenet_pretrain=True),
-        "ast2": lambda: ASTNet(n_mels=n_mels, target_T=target_T, label_dim=num_classes, imagenet_pretrain=True),
+        "ast2": lambda: AudioTransformer(n_mels=n_mels, target_t=target_T, num_classes=num_classes),
         "dropout": lambda: nn.Dropout(0.3)
     }
 
