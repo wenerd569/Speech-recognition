@@ -44,7 +44,7 @@ if __name__ == "__main__":
         "att128": lambda: AttentionCompleteNet(output_features=num_classes),
         "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
         "transformer": lambda: TransformerNet(input_features=n_mels),
-        "ast": lambda: ASTNet(n_mels=n_mels, target_T=target_T, label_dim=num_classes, imagenet_pretrain=True)
+        "ast": lambda: ASTNet(n_mels=n_mels, target_T=target_T, label_dim=num_classes, imagenet_pretrain=True),
         "dropout": lambda: nn.Dropout(0.3)
     }
 
