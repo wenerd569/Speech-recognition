@@ -55,8 +55,6 @@ class AudioTransformer(nn.Module):
         self.classifier = nn.Linear(d_model, num_classes)
 
     def forward(self, x):
-        # x: B × F × T
-        x = x.unsqueeze(1)  # B × 1 × F × T
 
         x = self.patch_embed(x)
         # B × D × grid_f × grid_t
