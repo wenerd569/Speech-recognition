@@ -45,6 +45,7 @@ if __name__ == "__main__":
         "meannet": lambda: MeanNet(input_features=n_mels, output_features=num_classes),
         "transformer": lambda: TransformerNet(input_features=n_mels),
         "ast": lambda: ASTNet(n_mels=n_mels, target_T=target_T, label_dim=num_classes, imagenet_pretrain=True)
+        "dropout": lambda: nn.Dropout(0.3)
     }
 
     parts_names = train_settings.get_parts()
@@ -58,6 +59,7 @@ if __name__ == "__main__":
     scheduler = LambdaLR(optimizer, lr_lambda=step_decay_mult)
 
 
-    train_loader = get_loader("df_train.csv", device, train_settings)
+    train_loader = get_loader("df_train.csv", device, train_settings, augment=True)
     validation_loader = get_loader("df_validation.csv", device, train_settings)
-    train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=10, save_path=train_settings.get_model_saving_path(), load_path=None)
+
+    train(net, epochs=train_settings.get_epoch_count(), train_loader=train_loader, validate_loader=validation_loader, optimizer=optimizer, loss=loss, scheduler=scheduler, num_classes=num_classes, device=device, eps=0.001, epochs_to_wait=2, save_path=train_settings.get_model_saving_path(), load_path=None)

@@ -15,15 +15,10 @@ def evaluate(model, dataloader, num_classes, loss, device):
         model.eval()
         model.to(device)
 
-        # acc = Accuracy(task="multiclass", num_classes=num_classes).to(device)
-        # f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro").to(device)
-        # prec = Precision(task="multiclass", num_classes=num_classes, average="macro").to(device)
-        # rec = Recall(task="multiclass", num_classes=num_classes, average="macro").to(device)
-
         # pyrefly: ignore [missing-argument]
         return metrics_and_loss(model, dataloader, loss, device, num_classes)
 
-def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path):
+def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, best_val_acc, save_path):
     dir = os.path.dirname(save_path)
     os.makedirs(dir, exist_ok=True)
 
@@ -34,6 +29,7 @@ def save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, 
         "scheduler_state_dict": scheduler.state_dict(),
         "best_metrics": best_metrics,
         "best_val_loss": best_val_loss,
+        "best_val_acc": best_val_acc,
     }, save_path)
 
     print(f"saved model to: {save_path}")
@@ -43,17 +39,20 @@ def load_model(model, optimizer, scheduler, load_path, device):
     dct = torch.load(load_path, map_location=device)
 
     model.load_state_dict(dct["model_state_dict"])
-    optimizer.load_state_dict(dct["optimizer_state_dict"])
-    scheduler.load_state_dict(dct["scheduler_state_dict"])
+    if optimizer is not None:
+        optimizer.load_state_dict(dct["optimizer_state_dict"])
+    if scheduler is not None:
+        scheduler.load_state_dict(dct["scheduler_state_dict"])
 
     start_epoch = dct["epoch"]
     best_val_loss = dct["best_val_loss"]
     best_metrics = dct["best_metrics"]
+    best_val_acc = dct.get("best_val_acc", float("nan"))  # в старых чекпоинтах его нет
 
     print(f"model path: {load_path}")
-    print(f"epoch: {start_epoch}, best_val_loss = {best_val_loss:.6f}")
+    print(f"epoch: {start_epoch}, best_val_loss = {best_val_loss:.6f}, best_val_acc = {best_val_acc:.6f}")
 
-    return start_epoch, best_val_loss, best_metrics
+    return start_epoch, best_val_loss, best_val_acc, best_metrics
 
 def step_decay_mult(epoch):
     drop = 0.4
@@ -70,7 +69,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
     start_epoch = 0
 
     if load_path is not None:
-        start_epoch, best_val_loss, best_metrics = load_model(model, optimizer, scheduler, load_path, device)
+        start_epoch, best_val_loss, best_val_acc, best_metrics = load_model(model, optimizer, scheduler, load_path, device)
 
     epoch = start_epoch
 
@@ -82,6 +81,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
     while(epoch<epochs):
         model.train()
         print(f"Epoch {epoch}")
+        save_to = os.path.join(save_path, f'model_{epoch}.pt')
 
         train_loss = 0.0
         total = 0
@@ -131,12 +131,12 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
             best_val_acc = val_acc
             best_metrics = metrics_loss
             best_val_loss = val_loss
-            print('model is better, saving')
-            save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, save_path)
             epochs_without_improvement = 0
         else:
             epochs_without_improvement+=1
 
+        print('saving')
+        save_model(model, optimizer, scheduler, epoch, best_metrics, best_val_loss, best_val_acc, save_to)
         epoch+=1
 
         if epochs_without_improvement >= epochs_to_wait:
@@ -153,7 +153,7 @@ def train(model, epochs: int, train_loader, validate_loader, optimizer, loss, sc
 
     writer.close()
 
-    print(f'finished, best_val_loss: {best_val_loss}')
+    print(f'finished, best_val_loss: {best_val_loss}, best_val_acc: {best_val_acc}')
     print(f'best metrics: {best_metrics}')
 
 
