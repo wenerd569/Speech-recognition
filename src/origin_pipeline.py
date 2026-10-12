@@ -17,6 +17,7 @@ from nn_modules.ast import AudioTransformer
 
 from nn_modules.union_net import UnionNet
 from train_evaluate import step_decay_mult, train
+from src.nn_modules.base_net_stride import BaseNetStride
 
 if __name__ == "__main__":
 
@@ -37,6 +38,7 @@ if __name__ == "__main__":
 
     nets = {
         "base15": lambda: BaseNet(kernel_sizes=[(1, 5), (1, 5)], channels=[10, 1]),
+        "base15": lambda: BaseNetStride(kernel_sizes=[(5, 5), (5, 5), (5, 5)], channels=[10, 20, 1]),
         "lstm64": lambda: LSTMNet(input_features=n_mels),
         "gru": lambda: GruNet(input_features=n_mels),
         "att128": lambda: AttentionCompleteNet(output_features=num_classes),
