@@ -6,10 +6,13 @@ class BaseNetStride(nn.Module):
         super().__init__()
         
         self.features = nn.Sequential(
-            nn.Conv2d(1, channels[0], kernel_size=kernel_sizes[0], stride=stride[0] padding="same"),
+            nn.Conv2d(1, channels[0], kernel_size=kernel_sizes[0], padding="same"),
             nn.ReLU(),
             nn.BatchNorm2d(channels[0]),
-            nn.Conv2d(channels[0], channels[1], kernel_size=kernel_sizes[1], stride=stride[0], padding="same"),
+            nn.Conv2d(channels[0], channels[1], kernel_size=kernel_sizes[1], padding="same"),
+            nn.ReLU(),
+            nn.BatchNorm2d(channels[1]),
+            nn.Conv2d(channels[1], channels[2], kernel_size=kernel_sizes[2], padding="same"),
             nn.ReLU(),
             nn.BatchNorm2d(channels[1])
         )
