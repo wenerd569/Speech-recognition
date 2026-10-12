@@ -3,7 +3,6 @@ import os.path as Path
 import runpy
 import json
 
-import argparse
 import shutil
 from datetime import datetime
 
@@ -31,7 +30,7 @@ def load_dataset(setting_path=BASIC_MODEL_SETTING, feature="melspec"):
     _run_main("wav_preproccess.py", 
               "--settings", setting_path, 
               "--feature", feature
-              )
+               )
     _run_main("data_preparing.py", setting_path)
 
 def create_model(llm_heads, epochs=None, name=None, setting_path=BASIC_MODEL_SETTING):
@@ -83,12 +82,12 @@ def train_model(run_dir):
     return history
 
 
-def test_model(model_dir, settings):
+def test_model(model_dir, train_settings_path.py):
     # choose the best epoch
     history = pd.read_csv(Path.join(model_dir, "history.csv"), index_col="epoch")
     epoch = history["Accuracy/val"].idxmax()
 
-    settings = TrainSettings(settings)
+    settings = TrainSettings(Path.join(model_dir, "train_settings.json"))
     metrics = run_test_model(Path.join(model_dir, f"model_{epoch}.pt"),
                          settings, 
                          get_device()
@@ -109,16 +108,3 @@ def test_model(model_dir, settings):
     plt.show()
     
     return metrics
-
-
-if __name__ == "__main__":
-        parser = argparse.ArgumentParser()
-        parser.add_argument("setting", help="path to model_setting.json")
-        parser.add_argument("model", help="path to model parametrs (model.pt)")
-        argv = parser.parse_args()
-    
-    
-        model_setting = TrainSettings(argv.setting)
-        model_path = argv.model
-    
-        test_model(model_path, model_setting)
