@@ -82,12 +82,12 @@ def train_model(run_dir):
     return history
 
 
-def test_model(model_dir):
+def test_model(model_dir, settings):
     # choose the best epoch
     history = pd.read_csv(Path.join(model_dir, "history.csv"), index_col="epoch")
     epoch = history["Accuracy/val"].idxmax()
 
-    settings = TrainSettings(Path.join(model_dir, "train_settings.json"))
+    settings = TrainSettings(settings)
     metrics = run_test_model(Path.join(model_dir, f"model_{epoch}.pt"),
                          settings, 
                          get_device()
@@ -108,3 +108,16 @@ def test_model(model_dir):
     plt.show()
     
     return metrics
+
+
+if __name__ == "__main__":
+        parser = argparse.ArgumentParser()
+        parser.add_argument("setting", help="path to model_setting.json")
+        parser.add_argument("model", help="path to model parametrs (model.pt)")
+        argv = parser.parse_args()
+    
+    
+        model_setting = TrainSettings(argv.setting)
+        model_path = argv.model
+    
+        test_model(model_path, model_setting)
