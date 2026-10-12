@@ -30,7 +30,7 @@ def load_dataset(setting_path=BASIC_MODEL_SETTING, feature="melspec"):
     _run_main("wav_preproccess.py", 
               "--settings", setting_path, 
               "--feature", feature
-               )
+              )
     _run_main("data_preparing.py", setting_path)
 
 def create_model(llm_heads, epochs=None, name=None, setting_path=BASIC_MODEL_SETTING):
@@ -82,7 +82,7 @@ def train_model(run_dir):
     return history
 
 
-def test_model(model_dir, train_settings_path.py):
+def test_model(model_dir):
     # choose the best epoch
     history = pd.read_csv(Path.join(model_dir, "history.csv"), index_col="epoch")
     epoch = history["Accuracy/val"].idxmax()
