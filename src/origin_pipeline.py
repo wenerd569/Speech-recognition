@@ -14,6 +14,7 @@ from nn_modules.mean_net import MeanNet
 from nn_modules.gru_net import GruNet
 from nn_modules.transformer_net import TransformerNet
 from nn_modules.ast import AudioTransformer
+from nn_modules.conv_net import ConvNet
 
 from nn_modules.union_net import UnionNet
 from train_evaluate import step_decay_mult, train
@@ -44,8 +45,7 @@ if __name__ == "__main__":
         "transformer": lambda: TransformerNet(input_features=n_mels),
         "ast": lambda: AudioTransformer(num_classes=num_classes, input_f=n_mels, input_t=target_T),
         "dropout": lambda: nn.Dropout(0.3),
-        "base_new_1": lambda: BaseNet(kernel_sizes=[(1,5),(1,5)], channels=[10, 20]),
-        "base_new_2": lambda: BaseNet(kernel_sizes=[(1,5),(1,5)], channels=[10, 1]),
+        "base_new": lambda: ConvNet(4, kernel_sizes=[(1,5),(1,5),(1,5),(1,5)], channels=[1, 10, 20, 10, 1])
     }
 
     parts_names = train_settings.get_parts()
